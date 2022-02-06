@@ -16,7 +16,7 @@
  * Within the module itself, all functions must be prefixed with the module
  * filename, followed by an underscore, and then the function name. For this
  * example file, the filename is "provisioningmodule" and therefore all
- * functions begin "provisioningmodule_".
+ * functions begin "libvirt_".
  *
  * If your module or third party API does not support a given function, you
  * should not define that function within your module. Only the _ConfigOptions
@@ -49,7 +49,7 @@ if (!defined("WHMCS")) {
  *
  * @return array
  */
-function provisioningmodule_MetaData()
+function libvirt_MetaData()
 {
     return array(
         'DisplayName' => 'Demo Provisioning Module',
@@ -85,7 +85,7 @@ function provisioningmodule_MetaData()
  *
  * @return array
  */
-function provisioningmodule_ConfigOptions()
+function libvirt_ConfigOptions()
 {
     return array(
         // a text field type allows for single line text input
@@ -149,7 +149,7 @@ function provisioningmodule_ConfigOptions()
  *
  * @return string "success" or an error message
  */
-function provisioningmodule_CreateAccount(array $params)
+function libvirt_CreateAccount(array $params)
 {
     try {
         // Call the service's provisioning function, using the values provided
@@ -197,7 +197,7 @@ function provisioningmodule_CreateAccount(array $params)
  *
  * @return string "success" or an error message
  */
-function provisioningmodule_SuspendAccount(array $params)
+function libvirt_SuspendAccount(array $params)
 {
     try {
         // Call the service's suspend function, using the values provided by
@@ -231,7 +231,7 @@ function provisioningmodule_SuspendAccount(array $params)
  *
  * @return string "success" or an error message
  */
-function provisioningmodule_UnsuspendAccount(array $params)
+function libvirt_UnsuspendAccount(array $params)
 {
     try {
         // Call the service's unsuspend function, using the values provided by
@@ -264,7 +264,7 @@ function provisioningmodule_UnsuspendAccount(array $params)
  *
  * @return string "success" or an error message
  */
-function provisioningmodule_TerminateAccount(array $params)
+function libvirt_TerminateAccount(array $params)
 {
     try {
         // Call the service's terminate function, using the values provided by
@@ -301,7 +301,7 @@ function provisioningmodule_TerminateAccount(array $params)
  *
  * @return string "success" or an error message
  */
-function provisioningmodule_ChangePassword(array $params)
+function libvirt_ChangePassword(array $params)
 {
     try {
         // Call the service's change password function, using the values
@@ -347,7 +347,7 @@ function provisioningmodule_ChangePassword(array $params)
  *
  * @return string "success" or an error message
  */
-function provisioningmodule_ChangePackage(array $params)
+function libvirt_ChangePackage(array $params)
 {
     try {
         // Call the service's change password function, using the values
@@ -395,7 +395,7 @@ function provisioningmodule_ChangePackage(array $params)
  *
  * @return array
  */
-function provisioningmodule_TestConnection(array $params)
+function libvirt_TestConnection(array $params)
 {
     try {
         // Call the service's connection test function.
@@ -428,11 +428,11 @@ function provisioningmodule_TestConnection(array $params)
  * Define additional actions that an admin user can perform for an
  * instance of a product/service.
  *
- * @see provisioningmodule_buttonOneFunction()
+ * @see libvirt_buttonOneFunction()
  *
  * @return array
  */
-function provisioningmodule_AdminCustomButtonArray()
+function libvirt_AdminCustomButtonArray()
 {
     return array(
         "Button 1 Display Value" => "buttonOneFunction",
@@ -451,7 +451,7 @@ function provisioningmodule_AdminCustomButtonArray()
  *
  * @return array
  */
-function provisioningmodule_ClientAreaCustomButtonArray()
+function libvirt_ClientAreaCustomButtonArray()
 {
     return array(
         "Action 1 Display Value" => "actionOneFunction",
@@ -470,11 +470,11 @@ function provisioningmodule_ClientAreaCustomButtonArray()
  * @param array $params common module parameters
  *
  * @see https://developers.whmcs.com/provisioning-modules/module-parameters/
- * @see provisioningmodule_AdminCustomButtonArray()
+ * @see libvirt_AdminCustomButtonArray()
  *
  * @return string "success" or an error message
  */
-function provisioningmodule_buttonOneFunction(array $params)
+function libvirt_buttonOneFunction(array $params)
 {
     try {
         // Call the service's function, using the values provided by WHMCS in
@@ -506,11 +506,11 @@ function provisioningmodule_buttonOneFunction(array $params)
  * @param array $params common module parameters
  *
  * @see https://developers.whmcs.com/provisioning-modules/module-parameters/
- * @see provisioningmodule_ClientAreaCustomButtonArray()
+ * @see libvirt_ClientAreaCustomButtonArray()
  *
  * @return string "success" or an error message
  */
-function provisioningmodule_actionOneFunction(array $params)
+function libvirt_actionOneFunction(array $params)
 {
     try {
         // Call the service's function, using the values provided by WHMCS in
@@ -543,11 +543,11 @@ function provisioningmodule_actionOneFunction(array $params)
  * @param array $params common module parameters
  *
  * @see https://developers.whmcs.com/provisioning-modules/module-parameters/
- * @see provisioningmodule_AdminServicesTabFieldsSave()
+ * @see libvirt_AdminServicesTabFieldsSave()
  *
  * @return array
  */
-function provisioningmodule_AdminServicesTabFields(array $params)
+function libvirt_AdminServicesTabFields(array $params)
 {
     try {
         // Call the service's function, using the values provided by WHMCS in
@@ -559,9 +559,9 @@ function provisioningmodule_AdminServicesTabFields(array $params)
             'Number of Apples' => (int) $response['numApples'],
             'Number of Oranges' => (int) $response['numOranges'],
             'Last Access Date' => date("Y-m-d H:i:s", $response['lastLoginTimestamp']),
-            'Something Editable' => '<input type="hidden" name="provisioningmodule_original_uniquefieldname" '
+            'Something Editable' => '<input type="hidden" name="libvirt_original_uniquefieldname" '
                 . 'value="' . htmlspecialchars($response['textvalue']) . '" />'
-                . '<input type="text" name="provisioningmodule_uniquefieldname"'
+                . '<input type="text" name="libvirt_uniquefieldname"'
                 . 'value="' . htmlspecialchars($response['textvalue']) . '" />',
         );
     } catch (Exception $e) {
@@ -592,17 +592,17 @@ function provisioningmodule_AdminServicesTabFields(array $params)
  * @param array $params common module parameters
  *
  * @see https://developers.whmcs.com/provisioning-modules/module-parameters/
- * @see provisioningmodule_AdminServicesTabFields()
+ * @see libvirt_AdminServicesTabFields()
  */
-function provisioningmodule_AdminServicesTabFieldsSave(array $params)
+function libvirt_AdminServicesTabFieldsSave(array $params)
 {
     // Fetch form submission variables.
-    $originalFieldValue = isset($_REQUEST['provisioningmodule_original_uniquefieldname'])
-        ? $_REQUEST['provisioningmodule_original_uniquefieldname']
+    $originalFieldValue = isset($_REQUEST['libvirt_original_uniquefieldname'])
+        ? $_REQUEST['libvirt_original_uniquefieldname']
         : '';
 
-    $newFieldValue = isset($_REQUEST['provisioningmodule_uniquefieldname'])
-        ? $_REQUEST['provisioningmodule_uniquefieldname']
+    $newFieldValue = isset($_REQUEST['libvirt_uniquefieldname'])
+        ? $_REQUEST['libvirt_uniquefieldname']
         : '';
 
     // Look for a change in value to avoid making unnecessary service calls.
@@ -638,7 +638,7 @@ function provisioningmodule_AdminServicesTabFieldsSave(array $params)
  *
  * @return array
  */
-function provisioningmodule_ServiceSingleSignOn(array $params)
+function libvirt_ServiceSingleSignOn(array $params)
 {
     try {
         // Call the service's single sign-on token retrieval function, using the
@@ -683,7 +683,7 @@ function provisioningmodule_ServiceSingleSignOn(array $params)
  *
  * @return array
  */
-function provisioningmodule_AdminSingleSignOn(array $params)
+function libvirt_AdminSingleSignOn(array $params)
 {
     try {
         // Call the service's single sign-on admin token retrieval function,
@@ -741,7 +741,7 @@ function provisioningmodule_AdminSingleSignOn(array $params)
  *
  * @return array
  */
-function provisioningmodule_ClientArea(array $params)
+function libvirt_ClientArea(array $params)
 {
     // Determine the requested action and set service call parameters based on
     // the action.

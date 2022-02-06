@@ -1,6 +1,6 @@
 <?php
 
-namespace WHMCS\Module\Addon\AddonModule\Admin;
+namespace WHMCS\Module\Addon\Libvirt\Admin;
 
 /**
  * Sample Admin Area Dispatch Handler
