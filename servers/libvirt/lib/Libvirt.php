@@ -1,19 +1,48 @@
 <?php
 
+require_once('PowerState.php');
+
+require_once('ConvertToMib.php');
+
+// https://developers.whmcs.com/advanced/db-interaction/
+use WHMCS\Database\Capsule;
+
 /**
+ * Libvirt
  * 
+ * Inspired by:
  * https://github.com/librenms/librenms/blob/master/includes/discovery/libvirt-vminfo.inc.php
  * 
- * virsh -rc qemu://root@172.168.1.41 list
+ * virsh list --all
+ * virsh -rc qemu://root@a.b.c.d list
  * virsh -r dumpxml 35
  */
 class Libvirt
-{
-    private $server;
+{    
+    private $ip_address;
 
-    public function __construct($server)
+    private $login;
+
+    public function __construct($username, $ipaddress)
     {
-        $this->server = $server;
+        $this->ip_address = $ipaddress;
+        $this->login = $username . '@' . $ipaddress;
+    }
+
+    /**
+     * Test basic connectivity using SSH
+     * 
+     * This will work if the key has been added
+     */
+    public function testConnection()
+    {
+        exec('ssh -o "StrictHostKeyChecking no" -o "PreferredAuthentications publickey" -o "IdentitiesOnly yes" ' . $this->login . ' echo -e', $out, $ret);
+
+        if ($ret != 255) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -21,14 +50,14 @@ class Libvirt
      */
     function virshList()
     {
-        $command1 = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->server 'virsh -r list'";
+        $command1 = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->login 'virsh -r list'";
 
         exec($command1, $output);
 
         foreach ($output as $vm) {
             [$vm_id,] = explode(' ', trim($vm), 2);
 
-            // Ignore first two lines of output
+            // Ignore the first two lines of the array output
             if (!is_numeric($vm_id)) {
                 continue;
             }
@@ -42,10 +71,29 @@ class Libvirt
     /**
      * Get the power on state of each VM
      */
-    public function powerState($vmId) {
+    public function powerState($vmId)
+    {
         $vm_state = $this->virshDomstate($vmId);
 
         return PowerState::STATES[strtolower($vm_state[0])] ?? PowerState::UNKNOWN;
+    }
+
+    /**
+     * Get extended information for a VM then flatten it to an XML string
+     */
+    public function virshDumpxml($vmId)
+    {
+        $command = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->login 'virsh -r dumpxml $vmId'";
+
+        exec($command, $vm_info_array);
+
+        $vm_info_xml = '';
+
+        foreach ($vm_info_array as $line) {
+            $vm_info_xml .= $line;
+        }
+
+        return simplexml_load_string('<?xml version="1.0"?> ' . $vm_info_xml);
     }
 
     /**
@@ -53,70 +101,84 @@ class Libvirt
      * 
      * See https://libvirt.org/manpages/virsh.html#domstate
      */
-    private function virshDomstate($vmId) {
-        $command = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->server 'virsh -r domstate $vmId'";
+    private function virshDomstate($vmId)
+    {
+        $command = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->login 'virsh -r domstate $vmId'";
 
         exec($command, $output);
-        
+
         return $output;
     }
 
     /**
-     * Get extended information for a VM then flatten it to an XML string
+     * Fetch all VMs and store in mod_libvirt
      */
-    function virshDumpxml($vmId) {
-        $command = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->server 'virsh -r dumpxml $vmId'";
-    
-        exec($command, $vm_info_array);
-    
-        $vm_info_xml = '';
-    
-        foreach ($vm_info_array as $line) {
-            $vm_info_xml .= $line;
+    public function fetchAndStoreVms()
+    {
+        $vmList = $this->virshList();
+                
+        foreach ($vmList as $vmId) {            
+            $xml = $this->virshDumpxml($vmId);
+
+            $vmwVmCpus = $xml->vcpu['current'];
+            if (!isset($vmwVmCpus)) {
+                $vmwVmCpus = $xml->vcpu;
+            }
+
+            Capsule::table('mod_libvirt')->updateOrInsert(
+                [ 
+                    'vm_id' => $vmId,
+                ],
+                [
+                    'name' => $xml->name,
+                    'vcpus' => $vmwVmCpus,
+                    'memory' => ConvertToMib($xml->memory),
+                    'power_state' => $this->powerState($vmId),
+                    'host_ip_address' => $this->ip_address,                    
+                ]
+            );            
         }
-    
-        return simplexml_load_string('<?xml version="1.0"?> ' . $vm_info_xml);
+
+        return count($vmList);
     }
 }
 
 ///////////// Start of Application ////////////////
 
-require_once('PowerState.php');
-require_once('ConvertToMib.php');
 
-$api = new Libvirt('root@172.168.1.41');
 
-$vmList = $api->virshList();
+// $api = new Libvirt('root@172.168.1.41');
 
-$vm_info_array = [];
-$vm_info_xml = '';
+// $vmList = $api->virshList();
 
-foreach ($vmList as $vmId) {
+// $vm_info_array = [];
+// $vm_info_xml = '';
+
+// foreach ($vmList as $vmId) {
             
-    $xml = $api->virshDumpxml($vmId);
+//     $xml = $api->virshDumpxml($vmId);
 
-    $vmwVmDisplayName = $xml->name;
+//     $vmwVmDisplayName = $xml->name;
 
-    echo $vmwVmDisplayName . "\n";
+//     echo $vmwVmDisplayName . "\n";
 
-    // libvirt does not supply this
-    $vmwVmGuestOS = '';
+//     // libvirt does not supply this
+//     $vmwVmGuestOS = '';
     
-    // $vm_state = $api->virshDomstate($vmId);
-    $powerState = $api->powerState($vmId);
+//     // $vm_state = $api->virshDomstate($vmId);
+//     $powerState = $api->powerState($vmId);
     
-    echo $powerState . "\n";
+//     echo $powerState . "\n";
         
-    $vmwVmCpus = $xml->vcpu['current'];
-    if (!isset($vmwVmCpus)) {
-        $vmwVmCpus = $xml->vcpu;
-    }
-    echo $vmwVmCpus . "\n";
+//     $vmwVmCpus = $xml->vcpu['current'];
+//     if (!isset($vmwVmCpus)) {
+//         $vmwVmCpus = $xml->vcpu;
+//     }
+//     echo $vmwVmCpus . "\n";
 
-    $vmwVmMemSize = $xml->memory;
+//     $vmwVmMemSize = $xml->memory;
 
-    echo $vmwVmMemSize . "\n";
+//     echo $vmwVmMemSize . "\n";
 
-    echo ConvertToMib($vmwVmMemSize) . "\n";
-}
-
+//     echo ConvertToMib($vmwVmMemSize) . "\n";
+// }
