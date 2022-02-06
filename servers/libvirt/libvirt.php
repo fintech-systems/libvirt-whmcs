@@ -1,41 +1,11 @@
 <?php
-/**
- * WHMCS SDK Sample Provisioning Module
- *
- * Provisioning Modules, also referred to as Product or Server Modules, allow
- * you to create modules that allow for the provisioning and management of
- * products and services in WHMCS.
- *
- * This sample file demonstrates how a provisioning module for WHMCS should be
- * structured and exercises all supported functionality.
- *
- * Provisioning Modules are stored in the /modules/servers/ directory. The
- * module name you choose must be unique, and should be all lowercase,
- * containing only letters & numbers, always starting with a letter.
- *
- * Within the module itself, all functions must be prefixed with the module
- * filename, followed by an underscore, and then the function name. For this
- * example file, the filename is "provisioningmodule" and therefore all
- * functions begin "libvirt_".
- *
- * If your module or third party API does not support a given function, you
- * should not define that function within your module. Only the _ConfigOptions
- * function is required.
- *
- * For more information, please refer to the online documentation.
- *
- * @see https://developers.whmcs.com/provisioning-modules/
- *
- * @copyright Copyright (c) WHMCS Limited 2017
- * @license https://www.whmcs.com/license/ WHMCS Eula
- */
 
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
-// Require any libraries needed for the module to function.
-// require_once __DIR__ . '/path/to/library/loader.php';
+// Require libraries needed for the module to function.
+require_once __DIR__ . '/lib/Libvirt.php';
 //
 // Also, perform any initialization required by the service's library.
 
@@ -52,7 +22,7 @@ if (!defined("WHMCS")) {
 function libvirt_MetaData()
 {
     return array(
-        'DisplayName' => 'Demo Provisioning Module',
+        'DisplayName' => 'Libvirt',
         'APIVersion' => '1.1', // Use API Version 1.1
         'RequiresServer' => true, // Set true if module requires a server to work
         'DefaultNonSSLPort' => '1111', // Default Non-SSL Connection Port
@@ -396,12 +366,15 @@ function libvirt_ChangePackage(array $params)
  * @return array
  */
 function libvirt_TestConnection(array $params)
-{
+{        
     try {
-        // Call the service's connection test function.
-
-        $success = true;
-        $errorMsg = '';
+        // Call the service's connection test function.       
+        $api = new Libvirt($params['serverusername'] . '@' . $params['serverip']);
+        
+        if ($api->testConnection()) {
+            $success = true;
+            $errorMsg = '';
+        }                        
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * WHMCS SDK Sample Addon Module
  *
@@ -60,16 +61,15 @@ function libvirt_config()
 {
     return [
         // Display name for your module
-        'name' => 'Addon Module Sample',
+        'name' => 'Libvirt',
         // Description displayed within the admin interface
-        'description' => 'This module provides an example WHMCS Addon Module'
-            . ' which can be used as a basis for building a custom addon module.',
+        'description' => 'An open source module to interface with a libvirt system using WHMCS',
         // Module author name
-        'author' => 'Your name goes here',
+        'author' => 'Fintech Systems',
         // Default language
         'language' => 'english',
         // Version number
-        'version' => '1.0',
+        'version' => '0.0.1',
         'fields' => [
             // a text field type allows for single line text input
             'Text Field Name' => [
@@ -145,26 +145,30 @@ function libvirt_activate()
     try {
         Capsule::schema()
             ->create(
-                'mod_addonexample',
+                'mod_libvirt',
                 function ($table) {
                     /** @var \Illuminate\Database\Schema\Blueprint $table */
                     $table->increments('id');
-                    $table->text('demo');
+                    $table->integer('vm_id');
+                    $table->string('name');
+                    $table->integer('vcpus');
+                    $table->integer('memory');
+                    $table->string('power_state');
+                    $table->string('host_ip_address');
+                    $table->integer('whmcs_service_id')->nullable();
                 }
             );
 
         return [
             // Supported values here include: success, error or info
             'status' => 'success',
-            'description' => 'This is a demo module only. '
-                . 'In a real module you might report a success or instruct a '
-                    . 'user how to get started with it here.',
+            'description' => 'Libvirt module database table created.',
         ];
     } catch (\Exception $e) {
         return [
             // Supported values here include: success, error or info
             'status' => "error",
-            'description' => 'Unable to create mod_addonexample: ' . $e->getMessage(),
+            'description' => 'Unable to create mod_libvirt: ' . $e->getMessage(),
         ];
     }
 }
@@ -187,19 +191,18 @@ function libvirt_deactivate()
     // Undo any database and schema modifications made by your module here
     try {
         Capsule::schema()
-            ->dropIfExists('mod_addonexample');
+            ->dropIfExists('mod_libvirt');
 
         return [
             // Supported values here include: success, error or info
             'status' => 'success',
-            'description' => 'This is a demo module only. '
-                . 'In a real module you might report a success here.',
+            'description' => 'Libvirt module database table deleted.',
         ];
     } catch (\Exception $e) {
         return [
             // Supported values here include: success, error or info
             "status" => "error",
-            "description" => "Unable to drop mod_addonexample: {$e->getMessage()}",
+            "description" => "Unable to drop mod_libvirt: {$e->getMessage()}",
         ];
     }
 }
@@ -224,7 +227,7 @@ function libvirt_upgrade($vars)
     if ($currentlyInstalledVersion < 1.1) {
         $schema = Capsule::schema();
         // Alter the table and add a new text column called "demo2"
-        $schema->table('mod_addonexample', function($table) {
+        $schema->table('mod_addonexample', function ($table) {
             $table->text('demo2');
         });
     }
@@ -233,7 +236,7 @@ function libvirt_upgrade($vars)
     if ($currentlyInstalledVersion < 1.2) {
         $schema = Capsule::schema();
         // Alter the table and add a new text column called "demo3"
-        $schema->table('mod_addonexample', function($table) {
+        $schema->table('mod_addonexample', function ($table) {
             $table->text('demo3');
         });
     }
@@ -301,7 +304,8 @@ function libvirt_sidebar($vars)
     $configRadioField = $vars['Radio Field Name'];
     $configTextareaField = $vars['Textarea Field Name'];
 
-    $sidebar = '<p>Sidebar output HTML goes here</p>';
+    // $sidebar = '<p>Sidebar output HTML goes here</p>';
+    $sidebar = '';
     return $sidebar;
 }
 
