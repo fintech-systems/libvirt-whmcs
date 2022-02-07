@@ -4,6 +4,9 @@ All notable changes to `whmcs-libvirt` will be documented in this file.
 
 ## 0.1.1 - 2022-02-07
 
+- The addon module landing page will now display any linked WHMCS products, as long as the Domain ID matches
+-- It will throw an exception if two IDs matches
+- Split TODO away from README
 - Client area has some dummy output
 - Renamed repo from whmcs-libvirt to libvirt-whmcs
 - CPU and RAM totals in use are now displaying

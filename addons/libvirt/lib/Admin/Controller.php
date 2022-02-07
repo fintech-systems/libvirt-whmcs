@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../../../servers/libvirt/lib/Libvirt.php';
 // Model documentation for Server (search Server): https://classdocs.whmcs.com/8.4/WHMCS/Service/Service.html
 
 use Libvirt;
+
 use \WHMCS\Product\Server;
 
 use WHMCS\Database\Capsule;
@@ -59,9 +60,9 @@ class Controller
                 . $vm->name . "</td><td>"
                 . $vm->vcpus . "</td><td>"
                 . $vm->ram . "</td><td>"
-                . $vm->power_state . "</td><td>"
+                . ucfirst($vm->power_state) . "</td><td>"
                 . $vm->node_ip_address . "</td><td>"
-                . "" . "</td><td>"
+                . \Whmcs::getServiceName($vm->whmcs_service_id) . "</td><td>"
                 . "</tr>";
         }        
 
@@ -92,7 +93,7 @@ class Controller
             <th>vCPUs</th>
             <th>RAM</th>
             <th>State</th>
-            <th>Host</th>
+            <th>Node</th>
             <th>WHMCS Service</th>
         </tr>        
         {$vmsTableBody}

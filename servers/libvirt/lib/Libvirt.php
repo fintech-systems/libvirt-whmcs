@@ -4,6 +4,8 @@ require_once('PowerState.php');
 
 require_once('ConvertToMib.php');
 
+require_once('Whmcs.php');
+
 // https://developers.whmcs.com/advanced/db-interaction/
 use WHMCS\Database\Capsule;
 
@@ -137,6 +139,7 @@ class Libvirt
                     'ram' => ConvertToMib($xml->memory),
                     'power_state' => $this->powerState($vmId),
                     'node_ip_address' => $this->ip_address,
+                    'whmcs_service_id' => Whmcs::getServiceIdBasedOnCustomFieldValue('domainid|Domain ID', $vmId),
                 ]
             );
         }

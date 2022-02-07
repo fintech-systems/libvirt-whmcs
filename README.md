@@ -29,28 +29,6 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 
 ![Libvirt Add On Module Landing Page](./addons/libvirt/lib/Screenshots/addon_module_landing_page.png)
 
-## Immediate TODO
-
-- Display disabled state on Hosts list in Addon Menu
-- Screenshot to display layout for readme
-- Show CPUs and RAM in front-end
-- Change all references from memory to RAM
-
-## Planned Features
-
-- Remove extra buttons and stuff on both server and addon module
-- Associate VM with client's account
-- Reboot VM
-
-### Later
-
-- See if Guest Agent is running
-- Graceful handling for powered off machines (virsh list --all shows these)
-- Find font-awesome fresh icon as fa-refresh doesn't seem to work on Addon module Refresh button
-- Show interface traffic
-- See Guest OS (<libosinfo:os id="http://ubuntu.com/ubuntu/20.04"/>)
-- Ability to automatically update module via git commands
-
 ## VM Guest Notes
 
 ### Debian/Ubuntu
@@ -90,5 +68,5 @@ If you're using Laravel Valet, you might have to also do this:
 
 ## Credits
 
-https://github.com/librenms/librenms/blob/master/includes/discovery/libvirt-vminfo.inc.php
-
+* LibreNMS kickstarted the libvirt virsh calls
+* SolusVM has a great WHMCS module for virtualization
