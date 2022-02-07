@@ -4,6 +4,9 @@ All notable changes to `whmcs-libvirt` will be documented in this file.
 
 ## 0.1.1 - 2022-02-07
 
+- Client area has some dummy output
+- Renamed repo from whmcs-libvirt to libvirt-whmcs
+- CPU and RAM totals in use are now displaying
 - Added hooks code to hide name servers
 
 ## 0.1.0 - 2022-02-07

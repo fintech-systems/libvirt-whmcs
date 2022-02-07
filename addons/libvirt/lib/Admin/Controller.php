@@ -32,65 +32,66 @@ class Controller
         $LANG = $vars['_lang']; // an array of the currently loaded language variables
 
         // Get a list of libvirt servers
-        $hosts = Server::whereType('libvirt')
-            ->select('id', 'name', 'ipaddress', 'username', 'disabled')
+        $nodes = Server::whereType('libvirt')
+            ->join('mod_libvirt_nodes', 'tblservers.ipaddress', '=', 'mod_libvirt_nodes.ip_address')
+            ->select('name', 'ipaddress', 'username', 'disabled', 'vcpus_in_use', 'ram_in_use')
             ->get();
 
-        $hostsTableBody = "";
-        foreach ($hosts as $server) {
-            $hostsTableBody .= "<tr><td>"
-                . $server->name . "</td><td>"
-                . $server->ipaddress . "</td><td>"
-                . "" . "</td><td>"
-                . "" . "</td><td>"
+        $nodesTableBody = "";
+
+        foreach ($nodes as $node) {
+            $nodesTableBody .= "<tr><td>"
+                . $node->name . "</td><td>"
+                . $node->ipaddress . "</td><td>"
+                . $node->vcpus_in_use . "</td><td>"
+                . $node->ram_in_use . "</td><td>"
+                . $node->disabled . "</td>"
                 . "</tr>";
         }
 
         $vmsTableBody = "";
-        foreach (Capsule::table('mod_libvirt')
-                ->orderBy('host_ip_address')
+
+        foreach (Capsule::table('mod_libvirt_domains')
+                ->orderBy('node_ip_address')
                 ->get() as $vm) {
             $vmsTableBody .= "<tr><td>"
-                . $vm->vm_id . "</td><td>"
+                . $vm->domain_id . "</td><td>"
                 . $vm->name . "</td><td>"
                 . $vm->vcpus . "</td><td>"
-                . $vm->memory . "</td><td>"
+                . $vm->ram . "</td><td>"
                 . $vm->power_state . "</td><td>"
-                . $vm->host_ip_address . "</td><td>"
+                . $vm->node_ip_address . "</td><td>"
                 . "" . "</td><td>"
                 . "</tr>";
-        }
-        //$vms = 
-
-        // Construct VMs table body
-
+        }        
 
         return <<<EOF
 
-        <h2>Hosts</h2>
+        <h2>Nodes</h2>
 
         <div class="tablebg">
         <table id="sortabletbl1" class="datatable" width="100%" border="0" cellspacing="1" cellpadding="3">
         <tr>
-            <th>Server</th>
+            <th>Node</th>
             <th>IP Address</th>            
-            <th>Total CPUs</th>
-            <th>Total RAM</th>                        
+            <th>vCPUs in Use</th>
+            <th>RAM in Use</th>
+            <th>Disabled</th>
         </tr>        
-        {$hostsTableBody}
+        {$nodesTableBody}
         </table>
         </div>
 
-        <h2>VMs</h2>
+        <h2>Domains</h2>
 
         <div class="tablebg">
         <table id="sortabletbl1" class="datatable" width="100%" border="0" cellspacing="1" cellpadding="3">
         <tr>
-            <th>VM ID</th>
+            <th>Domain ID</th>
             <th>Name</th>            
             <th>vCPUs</th>
-            <th>Memory</th>
-            <th>Power State</th>
+            <th>RAM</th>
+            <th>State</th>
             <th>Host</th>
             <th>WHMCS Service</th>
         </tr>        
@@ -99,9 +100,9 @@ class Controller
         </div>
         
 <p>
-    <a href="{$modulelink}&action=fetchVms" class="btn btn-success">
+    <a href="{$modulelink}&action=refreshDomains" class="btn btn-success">
         <i class="fa fa-check" aria-hidden="true"></i>
-        Refresh VMs
+        Refresh Domains
     </a>    
 </p>
 
@@ -109,30 +110,32 @@ EOF;
     }
 
     /**
-     * Show action.
+     * Fetch the Domains and also update the CPU and RAM in use counts
      *
      * @param array $vars Module configuration parameters
      *
      * @return string
      */
-    public function fetchVms($vars)
+    public function refreshDomains($vars)
     {
         // Get common module parameters
         $modulelink = $vars['modulelink']; // eg. addonmodules.php?module=addonmodule
         $version = $vars['version']; // eg. 1.0
         $LANG = $vars['_lang']; // an array of the currently loaded language variables
 
-        // Fetch all enabled libvirt hosts
-        $hosts = Server::whereType('libvirt')
+        // Fetch all enabled libvirt nodes
+        $nodes = Server::whereType('libvirt')
             ->select('id', 'name', 'ipaddress', 'username', 'disabled')
             ->whereDisabled(false)
             ->get();
 
         $result = "";
-        foreach ($hosts as $server) {
-            $libvirt = new Libvirt($server->username, $server->ipaddress);
+        foreach ($nodes as $node) {
+            $libvirt = new Libvirt($node->username, $node->ipaddress);
 
-            $result .= "Fetched " . $libvirt->fetchAndStoreVms() . " VMs from server $server->ipaddress<br>";
+            $result .= "Fetched " . $libvirt->fetchAndStoreDomains() . " Domains from Node $node->ipaddress<br>";
+
+            $libvirt->updateResourcesTotals($node);
         }
 
         return <<<EOF
@@ -144,7 +147,7 @@ EOF;
 <p>
     <a href="{$modulelink}" class="btn btn-info">
         <i class="fa fa-arrow-left"></i>
-        Back to Libvirt hosts and VMs
+        Back to Libvirt Nodes and VMs
     </a>
 </p>
 

@@ -18,7 +18,7 @@ use WHMCS\Database\Capsule;
  * virsh -r dumpxml 35
  */
 class Libvirt
-{    
+{
     private $ip_address;
 
     private $login;
@@ -46,7 +46,7 @@ class Libvirt
     }
 
     /**
-     * Get a list of VM IDs
+     * Get a list of Domain IDs
      */
     function virshList()
     {
@@ -75,7 +75,9 @@ class Libvirt
     {
         $vm_state = $this->virshDomstate($vmId);
 
-        return PowerState::STATES[strtolower($vm_state[0])] ?? PowerState::UNKNOWN;
+        return $vm_state[0];
+
+        // return PowerState::STATES[strtolower($vm_state[0])] ?? PowerState::UNKNOWN;
     }
 
     /**
@@ -111,13 +113,13 @@ class Libvirt
     }
 
     /**
-     * Fetch all VMs and store in mod_libvirt
+     * Fetch all VMs and store in mod_libvirt_domains
      */
-    public function fetchAndStoreVms()
+    public function fetchAndStoreDomains()
     {
         $vmList = $this->virshList();
-                
-        foreach ($vmList as $vmId) {            
+
+        foreach ($vmList as $vmId) {
             $xml = $this->virshDumpxml($vmId);
 
             $vmwVmCpus = $xml->vcpu['current'];
@@ -125,21 +127,47 @@ class Libvirt
                 $vmwVmCpus = $xml->vcpu;
             }
 
-            Capsule::table('mod_libvirt')->updateOrInsert(
-                [ 
-                    'vm_id' => $vmId,
+            Capsule::table('mod_libvirt_domains')->updateOrInsert(
+                [
+                    'domain_id' => $vmId,
                 ],
                 [
                     'name' => $xml->name,
                     'vcpus' => $vmwVmCpus,
-                    'memory' => ConvertToMib($xml->memory),
+                    'ram' => ConvertToMib($xml->memory),
                     'power_state' => $this->powerState($vmId),
-                    'host_ip_address' => $this->ip_address,                    
+                    'node_ip_address' => $this->ip_address,
                 ]
-            );            
+            );
         }
 
         return count($vmList);
+    }
+
+    /**
+     * Fetch all VMs and store in mod_libvirt_domains
+     */
+    public function updateResourcesTotals($node)
+    {
+        $cpusInUse = Capsule::table('mod_libvirt_domains')
+            ->where('node_ip_address', $node->ipaddress)
+            ->groupBy('node_ip_address')
+            ->sum('vcpus');
+            
+        $ramInUse = Capsule::table('mod_libvirt_domains')
+            ->where('node_ip_address', $node->ipaddress)
+            ->groupBy('node_ip_address')
+            ->sum('ram');
+
+        Capsule::table('mod_libvirt_nodes')->updateOrInsert(
+            [
+                'ip_address' => $node->ipaddress,
+            ],
+            [
+                'vcpus_in_use' => $cpusInUse,
+                'ram_in_use' => $ramInUse,
+            ]
+        );
     }
 }
 

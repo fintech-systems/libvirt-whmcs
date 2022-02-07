@@ -160,8 +160,11 @@
 {/foreach}
 
 {* start libvirt *}
+
+
 {foreach from=$productcustomfields item=customfield}
     <div class="row">
+        {$service_custom_field_domainid}
         <div class="col-sm-5">
             {$customfield.name}
         </div>

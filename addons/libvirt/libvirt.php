@@ -145,24 +145,39 @@ function libvirt_activate()
     try {
         Capsule::schema()
             ->create(
-                'mod_libvirt',
+                'mod_libvirt_domains',
                 function ($table) {
                     /** @var \Illuminate\Database\Schema\Blueprint $table */
                     $table->increments('id');
-                    $table->integer('vm_id');
+                    $table->integer('domain_id');
                     $table->string('name');
                     $table->integer('vcpus');
-                    $table->integer('memory');
+                    $table->integer('ram');
                     $table->string('power_state');
-                    $table->string('host_ip_address');
+                    $table->string('node_ip_address');
                     $table->integer('whmcs_service_id')->nullable();
+                }
+            );
+
+        Capsule::schema()
+            ->create(
+                'mod_libvirt_nodes',
+                function ($table) {
+                    /** @var \Illuminate\Database\Schema\Blueprint $table */
+                    $table->increments('id');
+                    $table->integer('serverid');
+                    $table->string('ip_address');                    
+                    $table->string('vcpus_total')->nullable();
+                    $table->integer('vcpus_in_use')->nullable();
+                    $table->integer('ram_total')->nullable();
+                    $table->string('ram_in_use')->nullable();
                 }
             );
 
         return [
             // Supported values here include: success, error or info
             'status' => 'success',
-            'description' => 'Libvirt module database table created.',
+            'description' => 'Libvirt module database tables created.',
         ];
     } catch (\Exception $e) {
         return [
@@ -191,12 +206,15 @@ function libvirt_deactivate()
     // Undo any database and schema modifications made by your module here
     try {
         Capsule::schema()
-            ->dropIfExists('mod_libvirt');
+            ->dropIfExists('mod_libvirt_domains');
+
+        Capsule::schema()
+            ->dropIfExists('mod_libvirt_nodes');
 
         return [
             // Supported values here include: success, error or info
             'status' => 'success',
-            'description' => 'Libvirt module database table deleted.',
+            'description' => 'Libvirt module database tables deleted.',
         ];
     } catch (\Exception $e) {
         return [

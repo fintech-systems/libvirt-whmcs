@@ -1,23 +1,29 @@
-# WHMCS Libvirt
+# Libvirt module for WHMCS
 
-An open source module to interface with a libvirt system using WHMCS
+An open source module to interface with a libvirt system using the WHMCS hosting billing solution
+
+* https://developer.ibm.com/tutorials/l-libvirt/
+* https://www.whmcs.com/
 
 **PRE-RELEASE SOFTWARE**
 
 ## Features
 
 - Add on module that displays libvirt hosts and guests
-- Display number of vCPUs and RAM
-- Button to refresh VMs. This will retrieve all running VMs from the enabled hosts
+- Display number of vCPUs and RAM in use by all domains
+- Display the total number of vCPUs and RAM commissioned on the nodes
+- Button to refresh and fetch domains from the nodes
+-- This will retrieve all running domains from enabled hosts
 
 ## Installation
 
-Your WHMCS server's public key needs to be added to the Libvirt hosts
+* Your WHMCS server's public key needs to be added to the Libvirt hosts
+* First activate the module. This will create the two database tables required by the module
+* Then add your Libvirt servers
+* Go back to the module and press the 'Refresh Domains' button
 
 ## Immediate TODO
 
-- Rename VMs to Guests
-- Find in code places where "server" could be substituted with "host"
 - Display disabled state on Hosts list in Addon Menu
 - Screenshot to display layout for readme
 - Show CPUs and RAM in front-end
@@ -57,8 +63,8 @@ Then start it:
 If you have a local installed of WHMCS, e.g. in `/home/username/code/whmcs`, you can symbolically link to it so:
 
 ```bash
-ln -s /home/username/code/whmcs-libvirt/addons/libvirt /home/username/code/whmcs/modules/addons/libvirt
-ln -s /home/eugene/code/whmcs-libvirt/servers/libvirt /home/eugene/code/whmcs/modules/servers/libvirt
+ln -s /home/username/code/libvirt-whmcs/addons/libvirt /home/username/code/whmcs/modules/addons/libvirt
+ln -s /home/username/code/libvirt-whmcs/servers/libvirt /home/username/code/whmcs/modules/servers/libvirt
 ```
 
 #### Ioncube issues
