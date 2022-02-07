@@ -19,8 +19,15 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 
 * Your WHMCS server's public key needs to be added to the Libvirt hosts
 * First activate the module. This will create the two database tables required by the module
-* Then add your Libvirt servers
+* Then add your Libvirt servers using WHMCS Systems Settings -> Server
+** Specify the user and IP address. Since you're using keys, the password is not needed.
 * Go back to the module and press the 'Refresh Domains' button
+
+## Screenshots
+
+### Add on Module
+
+![Libvirt Add On Module Landing Page](./addons/libvirt/lib/Screenshots/addon_module_landing_page.png)
 
 ## Immediate TODO
 
