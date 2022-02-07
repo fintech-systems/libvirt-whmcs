@@ -61,7 +61,7 @@
             </div>
         </div>
     {/if}
-    {if $ns1 || $ns2}
+    {* {if $ns1 || $ns2}
         <div class="row">
             <div class="col-sm-5">
                 {$LANG.domainnameservers}
@@ -70,7 +70,7 @@
                 {$ns1}<br />{$ns2}
             </div>
         </div>
-    {/if}
+    {/if} *}
 {else}
     {if $domain}
         <div class="row">
@@ -159,6 +159,7 @@
     </div>
 {/foreach}
 
+{* start libvirt *}
 {foreach from=$productcustomfields item=customfield}
     <div class="row">
         <div class="col-sm-5">
@@ -169,6 +170,7 @@
         </div>
     </div>
 {/foreach}
+{* end libvirt *}
 
 {if $lastupdate}
     <div class="row">

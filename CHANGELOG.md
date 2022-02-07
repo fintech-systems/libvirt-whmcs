@@ -2,6 +2,10 @@
 
 All notable changes to `whmcs-libvirt` will be documented in this file.
 
+## 0.1.1 - 2022-02-07
+
+- Added hooks code to hide name servers
+
 ## 0.1.0 - 2022-02-07
 
 - Display a table with all VM hosts and guests
