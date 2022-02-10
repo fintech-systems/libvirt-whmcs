@@ -2,6 +2,11 @@
 
 All notable changes to `whmcs-libvirt` will be documented in this file.
 
+## 0.1.2 - 2022-02-10
+
+- Added a Test.php script in server lib directory
+- Added a crude updater that pulls the add-on and module sources 
+
 ## 0.1.1 - 2022-02-07
 
 - The addon module landing page will now display any linked WHMCS products, as long as the Domain ID matches

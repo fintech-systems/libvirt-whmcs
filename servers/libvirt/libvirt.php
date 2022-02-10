@@ -408,8 +408,8 @@ function libvirt_TestConnection(array $params)
 function libvirt_AdminCustomButtonArray()
 {
     return array(
-        "Button 1 Display Value" => "buttonOneFunction",
-        "Button 2 Display Value" => "buttonTwoFunction",
+        "Reboot Server" => "buttonOneFunction",
+        "Shutdown Server" => "buttonTwoFunction",
     );
 }
 
@@ -427,8 +427,8 @@ function libvirt_AdminCustomButtonArray()
 function libvirt_ClientAreaCustomButtonArray()
 {
     return array(
-        "Action 1 Display Value" => "actionOneFunction",
-        "Action 2 Display Value" => "actionTwoFunction",
+        "Reboot Server" => "actionOneFunction",
+        "Shutdown Server" => "actionTwoFunction",
     );
 }
 
@@ -527,15 +527,17 @@ function libvirt_AdminServicesTabFields(array $params)
         // `$params`.
         $response = array();
 
+        $resources = new Resources($params['serviceid']);
+
         // Return an array based on the function's response.
         return array(
-            'Number of Apples' => (int) $response['numApples'],
-            'Number of Oranges' => (int) $response['numOranges'],
-            'Last Access Date' => date("Y-m-d H:i:s", $response['lastLoginTimestamp']),
-            'Something Editable' => '<input type="hidden" name="libvirt_original_uniquefieldname" '
-                . 'value="' . htmlspecialchars($response['textvalue']) . '" />'
-                . '<input type="text" name="libvirt_uniquefieldname"'
-                . 'value="' . htmlspecialchars($response['textvalue']) . '" />',
+            'Power State' => $resources->getPowerState(),
+            'vCPUs' => $resources->getVcpus(),
+            'Memory' => $resources->getRam(),
+            // 'Something Editable' => '<input type="hidden" name="libvirt_original_uniquefieldname" '
+            //     . 'value="' . htmlspecialchars($response['textvalue']) . '" />'
+            //     . '<input type="text" name="libvirt_uniquefieldname"'
+            //     . 'value="' . htmlspecialchars($response['textvalue']) . '" />',
         );
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
@@ -733,7 +735,13 @@ function libvirt_ClientArea(array $params)
         // values provided by WHMCS in `$params`.
         $response = array();
 
-        $extraVariable1 = 'abc';
+        $resources = new Resources($params['serviceid']);
+
+        // die(print_r($params['serviceid']));
+        // die(print_r($resources));
+        // die(print_r($resources->getRam(),1));
+
+        $extraVariable1 = $resources->getVcpus();
         $extraVariable2 = '123';
 
         return array(
@@ -741,6 +749,7 @@ function libvirt_ClientArea(array $params)
             'templateVariables' => array(
                 'extraVariable1' => $extraVariable1,
                 'extraVariable2' => $extraVariable2,
+                'resources' => $resources,
             ),
         );
     } catch (Exception $e) {

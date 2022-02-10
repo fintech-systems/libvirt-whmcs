@@ -12,6 +12,8 @@ use \WHMCS\Product\Server;
 
 use WHMCS\Database\Capsule;
 
+use WHMCS\Service\Service; // Docs: https://classdocs.whmcs.com/7.0/WHMCS/Service/Service.html
+
 /**
  * Libvirt Admin Area Controller
  */
@@ -50,19 +52,24 @@ class Controller
                 . "</tr>";
         }
 
-        $vmsTableBody = "";
+        $domainsTableBody = "";
 
         foreach (Capsule::table('mod_libvirt_domains')
                 ->orderBy('node_ip_address')
-                ->get() as $vm) {
-            $vmsTableBody .= "<tr><td>"
-                . $vm->domain_id . "</td><td>"
-                . $vm->name . "</td><td>"
-                . $vm->vcpus . "</td><td>"
-                . $vm->ram . "</td><td>"
-                . ucfirst($vm->power_state) . "</td><td>"
-                . $vm->node_ip_address . "</td><td>"
-                . \Whmcs::getServiceName($vm->whmcs_service_id) . "</td><td>"
+                ->get() as $domain) {
+
+            $service = Service::find($domain->whmcs_service_id);
+
+            $domainsTableBody .= "<tr><td>"
+                . $domain->domain_id . "</td><td>"
+                . $domain->name . "</td><td>"
+                . "<a href='clientsservices.php?userid=$service->userid&productselect=$domain->whmcs_service_id'>"
+                . $service->product->name . "</a></td><td>"                
+                . $domain->vcpus . "</td><td>"
+                . $domain->ram . "</td><td>"
+                . $service->amount . "</a></td><td>"
+                . $domain->node_ip_address . "</td><td>"
+                . ucfirst($domain->power_state) . "</td>"                                
                 . "</tr>";
         }        
 
@@ -88,15 +95,17 @@ class Controller
         <div class="tablebg">
         <table id="sortabletbl1" class="datatable" width="100%" border="0" cellspacing="1" cellpadding="3">
         <tr>
-            <th>Domain ID</th>
-            <th>Name</th>            
+            <th>ID</th>
+            <th>Domain</th>            
+            <th>WHMCS Service</th>            
             <th>vCPUs</th>
-            <th>RAM</th>
-            <th>State</th>
+            <th>RAM</th>            
+            <th>Amount</th>
             <th>Node</th>
-            <th>WHMCS Service</th>
+            <th>State</th>
+            
         </tr>        
-        {$vmsTableBody}
+        {$domainsTableBody}
         </table>
         </div>
         

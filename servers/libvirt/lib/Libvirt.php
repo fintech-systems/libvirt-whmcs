@@ -6,6 +6,8 @@ require_once('ConvertToMib.php');
 
 require_once('Whmcs.php');
 
+require_once('Resources.php');
+
 // https://developers.whmcs.com/advanced/db-interaction/
 use WHMCS\Database\Capsule;
 
