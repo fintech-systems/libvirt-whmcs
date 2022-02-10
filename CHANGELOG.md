@@ -4,6 +4,7 @@ All notable changes to `whmcs-libvirt` will be documented in this file.
 
 ## 0.1.2 - 2022-02-10
 
+- Show power state, vcpus, and ram in client and admin area
 - Added a Test.php script in server lib directory
 - Added a crude updater that pulls the add-on and module sources 
 
