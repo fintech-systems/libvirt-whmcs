@@ -1,8 +1,10 @@
 <?php
 
+require_once('Libvirt.php');
+
 ///////////// Start of Application ////////////////
 
-$api = new Libvirt('root@172.168.1.42');
+$api = new Libvirt('root', '172.168.1.42');
 
 $vmList = $api->virshList();
 
