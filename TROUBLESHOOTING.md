@@ -1,3 +1,40 @@
+## VM Guest Notes
+
+### Debian/Ubuntu
+
+In order for the module to read the QEMU guest agent status, the following software must be installed on the guest:
+
+`sudo apt-get install qemu-guest-agent`
+
+Then start it:
+
+`sudo /etc/init.d/qemu-guest-agent start`
+
+### Developer Notes
+
+#### Linking to WHMCS
+
+If you have a local installed of WHMCS, e.g. in `/home/username/code/whmcs`, you can symbolically link to it so:
+
+```bash
+ln -s /home/username/code/libvirt-whmcs/addons/libvirt /home/username/code/whmcs/modules/addons/libvirt
+ln -s /home/username/code/libvirt-whmcs/servers/libvirt /home/username/code/whmcs/modules/servers/libvirt
+```
+
+#### Ioncube issues
+
+WHMCS is not PHP 8 compatile because Ioncube is not PHP 8 compatible.
+
+Use this command to change your PHP version:
+
+`sudo update-alternatives --config php`
+
+If you're using Laravel Valet, you might have to also do this:
+
+`/etc/init.d/php8.0-fpm stop`
+
+`valet install`
+
 ## Get Usage
 
 ssh -o "StrictHostKeyChecking no" -o "PreferredAuthentications publickey" -o "IdentitiesOnly yes" root@172.168.1.41 'virsh -r domifstat 35 macvtap5'
