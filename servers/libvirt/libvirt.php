@@ -427,8 +427,10 @@ function libvirt_AdminCustomButtonArray()
 function libvirt_ClientAreaCustomButtonArray()
 {
     return array(
-        "Reboot Server" => "actionOneFunction",
-        "Shutdown Server" => "actionTwoFunction",
+        "Start Server" => "start",
+        "Shutdown Server" => "shutdown",
+        "Reboot Server" => "reboot",
+        "Reset Server" => "reset",
     );
 }
 
@@ -483,11 +485,85 @@ function libvirt_buttonOneFunction(array $params)
  *
  * @return string "success" or an error message
  */
-function libvirt_actionOneFunction(array $params)
+function libvirt_reboot(array $params)
 {
-    try {
-        // Call the service's function, using the values provided by WHMCS in
-        // `$params`.
+    try {        
+        $resources = new Resources($params['serviceid']);
+
+        $libvirt = new Libvirt($resources->nodeUsername(), $resources->nodeIpAddress());
+        
+        $libvirt->reboot($resources->name(), 'acpi');
+    } catch (Exception $e) {
+        // Record the error in WHMCS's module log.
+        logModuleCall(
+            'provisioningmodule',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+
+        return $e->getMessage();
+    }
+
+    return 'success';
+}
+
+function libvirt_reset(array $params)
+{
+    try {        
+        $resources = new Resources($params['serviceid']);
+
+        $libvirt = new Libvirt($resources->nodeUsername(), $resources->nodeIpAddress());
+        
+        $libvirt->reset($resources->name());
+    } catch (Exception $e) {        
+        logModuleCall(
+            'provisioningmodule',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+
+        return $e->getMessage();
+    }
+
+    return 'success';
+}
+
+function libvirt_shutdown(array $params)
+{
+    try {        
+        $resources = new Resources($params['serviceid']);
+
+        $libvirt = new Libvirt($resources->nodeUsername(), $resources->nodeIpAddress());
+        
+        $libvirt->shutdown($resources->name());
+    } catch (Exception $e) {
+        // Record the error in WHMCS's module log.
+        logModuleCall(
+            'provisioningmodule',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+
+        return $e->getMessage();
+    }
+
+    return 'success';
+}
+
+function libvirt_start(array $params)
+{
+    try {        
+        $resources = new Resources($params['serviceid']);
+
+        $libvirt = new Libvirt($resources->nodeUsername(), $resources->nodeIpAddress());
+        
+        $libvirt->start($resources->name());
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -531,9 +607,9 @@ function libvirt_AdminServicesTabFields(array $params)
 
         // Return an array based on the function's response.
         return array(
-            'Power State' => $resources->getPowerState(),
-            'vCPUs' => $resources->getVcpus(),
-            'Memory' => $resources->getRam(),
+            'Power State' => $resources->powerState(),
+            'vCPUs' => $resources->vcpus(),
+            'Memory' => $resources->ram(),
             // 'Something Editable' => '<input type="hidden" name="libvirt_original_uniquefieldname" '
             //     . 'value="' . htmlspecialchars($response['textvalue']) . '" />'
             //     . '<input type="text" name="libvirt_uniquefieldname"'
@@ -731,24 +807,12 @@ function libvirt_ClientArea(array $params)
     }
 
     try {
-        // Call the service's function based on the request action, using the
-        // values provided by WHMCS in `$params`.
-        $response = array();
 
         $resources = new Resources($params['serviceid']);
 
-        // die(print_r($params['serviceid']));
-        // die(print_r($resources));
-        // die(print_r($resources->getRam(),1));
-
-        $extraVariable1 = $resources->getVcpus();
-        $extraVariable2 = '123';
-
         return array(
             'tabOverviewReplacementTemplate' => $templateFile,
-            'templateVariables' => array(
-                'extraVariable1' => $extraVariable1,
-                'extraVariable2' => $extraVariable2,
+            'templateVariables' => array(                
                 'resources' => $resources,
             ),
         );

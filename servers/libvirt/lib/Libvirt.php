@@ -27,10 +27,77 @@ class Libvirt
 
     private $login;
 
+    private $ssh = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'";
+    // ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'
+    // ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'
+    // ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'
+    // ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'";
+
     public function __construct($username, $ipaddress)
     {
         $this->ip_address = $ipaddress;
+
         $this->login = $username . '@' . $ipaddress;
+    }
+
+    /**
+     * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-starting_suspending_resuming_saving_and_restoring_a_guest_virtual_machine-starting_a_defined_domain#sect-Shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine-Rebooting_a_guest_virtual_machine     
+     */
+    public function reboot($name, $mode = 'initctl') {
+        $command = "$this->ssh $this->login 'virsh reboot $name --mode $mode'";
+        
+        exec ($command, $out, $ret);
+
+        if ($ret != 255) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine
+     */
+    public function reset($name) {
+        $command = "$this->ssh $this->login 'virsh reset $name'";
+            
+        exec ($command, $out, $ret);
+
+        if ($ret != 255) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-starting_suspending_resuming_saving_and_restoring_a_guest_virtual_machine-starting_a_defined_domain#sect-start-vm
+     */
+    public function start($name) {
+        $command = "$this->ssh $this->login 'virsh start $name'";
+        
+        exec ($command, $out, $ret);
+
+        if ($ret != 255) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine
+     */
+    public function shutdown($name, $mode = 'acpi') {
+        $command = "$this->ssh $this->login 'virsh shutdown $name --mode $mode'";
+        
+        exec ($command, $out, $ret);
+
+        if ($ret != 255) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -54,7 +121,7 @@ class Libvirt
      */
     function virshList()
     {
-        $command1 = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->login 'virsh -r list'";
+        $command1 = "$this->ssh $this->login 'virsh -r list'";
 
         exec($command1, $output);
 
@@ -79,9 +146,7 @@ class Libvirt
     {
         $vm_state = $this->virshDomstate($vmId);
 
-        return $vm_state[0];
-
-        // return PowerState::STATES[strtolower($vm_state[0])] ?? PowerState::UNKNOWN;
+        return $vm_state[0];        
     }
 
     /**
@@ -89,7 +154,7 @@ class Libvirt
      */
     public function virshDumpxml($vmId)
     {
-        $command = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->login 'virsh -r dumpxml $vmId'";
+        $command = "$this->ssh $this->login 'virsh -r dumpxml $vmId'";
 
         exec($command, $vm_info_array);
 
@@ -109,7 +174,7 @@ class Libvirt
      */
     private function virshDomstate($vmId)
     {
-        $command = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes' $this->login 'virsh -r domstate $vmId'";
+        $command = "$this->ssh $this->login 'virsh -r domstate $vmId'";
 
         exec($command, $output);
 
@@ -176,42 +241,3 @@ class Libvirt
     }
 }
 
-///////////// Start of Application ////////////////
-
-
-
-// $api = new Libvirt('root@172.168.1.41');
-
-// $vmList = $api->virshList();
-
-// $vm_info_array = [];
-// $vm_info_xml = '';
-
-// foreach ($vmList as $vmId) {
-            
-//     $xml = $api->virshDumpxml($vmId);
-
-//     $vmwVmDisplayName = $xml->name;
-
-//     echo $vmwVmDisplayName . "\n";
-
-//     // libvirt does not supply this
-//     $vmwVmGuestOS = '';
-    
-//     // $vm_state = $api->virshDomstate($vmId);
-//     $powerState = $api->powerState($vmId);
-    
-//     echo $powerState . "\n";
-        
-//     $vmwVmCpus = $xml->vcpu['current'];
-//     if (!isset($vmwVmCpus)) {
-//         $vmwVmCpus = $xml->vcpu;
-//     }
-//     echo $vmwVmCpus . "\n";
-
-//     $vmwVmMemSize = $xml->memory;
-
-//     echo $vmwVmMemSize . "\n";
-
-//     echo ConvertToMib($vmwVmMemSize) . "\n";
-// }
