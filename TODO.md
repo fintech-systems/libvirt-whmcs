@@ -1,12 +1,6 @@
-## Immediate TODO
+## Upcoming Work
 
-- WHMCS library and Custom field accessor
-
-## Upcoming Features
-
-- Associate VM with client's account
-- Show CPUs and RAM in front-end
-- Reboot VM
+- Add more screenshots to readme
 
 ## Ongoing
 
