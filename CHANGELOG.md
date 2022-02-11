@@ -5,7 +5,7 @@ All notable changes to `whmcs-libvirt` will be documented in this file.
 ## 0.1.3 - 2022-02-11
 
 - Added Start, Shutdown, Reboot, and Reset command in client area
-- First packagist release
+- First release
 - Moved other templates to examples folder
 - New client area based loosely on cPanel template
 
