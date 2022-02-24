@@ -2,6 +2,17 @@
 
 All notable changes to `whmcs-libvirt` will be documented in this file.
 
+## 0.1.4 - 2022-02-24
+
+### Added
+- Added module logging in Libvirt when fetching all domains using virshDumpxml
+
+### Changed
+- Removed WHMCS sample provisioning code at server module `libvirt_ConfigOptions` and converted to [] format
+
+### Fixed
+- Fixed bug on test connection where username and IP needed to be split
+
 ## 0.1.3 - 2022-02-11
 
 - Added Start, Shutdown, Reboot, and Reset command in client area

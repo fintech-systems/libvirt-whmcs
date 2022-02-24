@@ -187,7 +187,7 @@ class Libvirt
     public function fetchAndStoreDomains()
     {
         $vmList = $this->virshList();
-
+        
         foreach ($vmList as $vmId) {
             $xml = $this->virshDumpxml($vmId);
 
@@ -195,6 +195,9 @@ class Libvirt
             if (!isset($vmwVmCpus)) {
                 $vmwVmCpus = $xml->vcpu;
             }
+
+            // See https://developers.whmcs.com/provisioning-modules/module-logging/
+            logModuleCall("libvirt", "fetchAndStoreDomains", $vmId, $vmId, $xml, "");
 
             Capsule::table('mod_libvirt_domains')->updateOrInsert(
                 [
