@@ -2,6 +2,10 @@
 
 All notable changes to `whmcs-libvirt` will be documented in this file.
 
+## 0.2.1 - 2022-03-02
+
+- Fixed CPUs in use by not counting non running CPUs
+
 ## 0.2.0 - 2022-03-02
 
 - The module was rewritten to work with UUIDs instead of Domain IDs. This allows this module to also list VMs which are offline. This is breaking change since Product Definitions worked on domainid|Domain ID custom field before. It's essentially a two step process that first fetches state and name and then UUID

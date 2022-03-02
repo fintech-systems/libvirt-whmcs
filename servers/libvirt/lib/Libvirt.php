@@ -263,6 +263,7 @@ class Libvirt
     {
         $cpusInUse = Capsule::table('mod_libvirt_domains')
             ->where('node_ip_address', $node->ipaddress)
+            ->where('state', 'running')
             ->groupBy('node_ip_address')
             ->sum('vcpus');
             

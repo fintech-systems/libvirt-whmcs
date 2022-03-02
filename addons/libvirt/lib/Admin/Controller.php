@@ -58,9 +58,9 @@ class Controller
             $nodesTableBody .= "<tr><td>"
                 . $node->name . "</td><td>"
                 . $node->ipaddress . "</td><td>"
-                . $node->total_cpus . "</td><td>"
+                . $node->cpu_total . "</td><td>"
                 . $node->vcpus_in_use . "</td><td>"
-                . $node->total_ram . "</td><td>"
+                . $node->ram_total . "</td><td>"
                 . $node->ram_in_use . "</td><td>"
                 . $node->disabled . "</td>"
                 . "</tr>";
