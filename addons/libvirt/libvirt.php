@@ -69,7 +69,7 @@ function libvirt_config()
         // Default language
         'language' => 'english',
         // Version number
-        'version' => '0.0.1',
+        'version' => '0.2.0',
         'fields' => [
         ]
     ];
