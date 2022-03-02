@@ -117,28 +117,52 @@ class Libvirt
     }
 
     /**
-     * Get a list of Domain IDs
+     * This outputs table format IDs, names, and states and returns array with names/state/id
+     * 
+     * IDs might be empty in lieu of --all
+     * 
+     * This command should precede virsh list --all --name --uuid which then merges
+     * the information with UUIDs
      */
-    function virshList()
-    {
-        $command1 = "$this->ssh $this->login 'virsh -r list'";
+    function virshListIdNameState() {
+        $command = "$this->ssh $this->login 'virsh list --all'";
 
-        exec($command1, $output);
+        exec($command, $output);
+        
+        $numberOfDomains = count($output) - 1;
+        
+        // Start at index item 2 to skip column header and dashed break line
+        for ($i = 2; $i < $numberOfDomains; $i++) { 
+            $result = preg_split('/ +/', $output[$i]);
+                        
+            $domains[$result[2]]['state'] = trim($result[3] . ' ' . $result[4]);
 
-        foreach ($output as $vm) {
-            [$vm_id,] = explode(' ', trim($vm), 2);
-
-            // Ignore the first two lines of the array output
-            if (!is_numeric($vm_id)) {
-                continue;
-            }
-
-            $vmIds[] = $vm_id;
+            $domains[$result[2]]['id'] = $result[1];
         }
-
-        return $vmIds;
+        
+        return $domains;
     }
 
+    function virshListUuidName($domainsList) {
+        $command = "$this->ssh $this->login 'virsh list --all --uuid --name'";
+
+        exec($command, $output);
+                                        
+        foreach ($output as $domain) {             
+
+            [$uuid, $name] = explode(' ', $domain);
+                                    
+            // The last line is empty so avoid capturing it
+            if ($domain) {
+                $domainsList[$name]['uuid'] = trim(preg_replace('/\t+/', '', $uuid)); // Trim tab
+                $domainsList[$name]['name'] = $name;
+            }
+            
+        }
+        
+        return $domainsList;
+    }
+    
     /**
      * Get the power on state of each VM
      */
@@ -151,10 +175,12 @@ class Libvirt
 
     /**
      * Get extended information for a VM then flatten it to an XML string
+     * 
+     * $id can be UUID or vmID or name
      */
-    public function virshDumpxml($vmId)
+    public function virshDumpxml($id)
     {
-        $command = "$this->ssh $this->login 'virsh -r dumpxml $vmId'";
+        $command = "$this->ssh $this->login 'virsh dumpxml $id'";
 
         exec($command, $vm_info_array);
 
@@ -172,9 +198,9 @@ class Libvirt
      * 
      * See https://libvirt.org/manpages/virsh.html#domstate
      */
-    private function virshDomstate($vmId)
+    private function virshDomstate($id)
     {
-        $command = "$this->ssh $this->login 'virsh -r domstate $vmId'";
+        $command = "$this->ssh $this->login 'virsh -r domstate $id'";
 
         exec($command, $output);
 
@@ -183,13 +209,25 @@ class Libvirt
 
     /**
      * Fetch all VMs and store in mod_libvirt_domains
+     * 
+     * This is a multi-step process:
+     * 
+     *  1. Fetch id, name and state
+     *  2. Fetch UUID and combine with name
+     *  3. Store in database based on UUID
+     * 
+     *  Return the number of domain updated for totals storage
      */
     public function fetchAndStoreDomains()
     {
-        $vmList = $this->virshList();
-        
-        foreach ($vmList as $vmId) {
-            $xml = $this->virshDumpxml($vmId);
+        $domainsList1 = $this->virshListIdNameState();
+
+        $domainsList2 = $this->virshListUuidName($domainsList1);
+                
+        foreach ($domainsList2 as $domain) {
+            // die(print_r($domain,1));
+
+            $xml = $this->virshDumpxml($domain['uuid']);
 
             $vmwVmCpus = $xml->vcpu['current'];
             if (!isset($vmwVmCpus)) {
@@ -197,24 +235,25 @@ class Libvirt
             }
 
             // See https://developers.whmcs.com/provisioning-modules/module-logging/
-            logModuleCall("libvirt", "fetchAndStoreDomains", $vmId, $vmId, $xml, "");
+            logModuleCall("libvirt", "fetchAndStoreDomains", $domain['uuid'], $domain['id'], $xml, "");
 
             Capsule::table('mod_libvirt_domains')->updateOrInsert(
                 [
-                    'domain_id' => $vmId,
+                    'uuid' => $domain['uuid'],
                 ],
                 [
+                    'domain_id' => $domain['id'],
                     'name' => $xml->name,
                     'vcpus' => $vmwVmCpus,
                     'ram' => ConvertToMib($xml->memory),
-                    'power_state' => $this->powerState($vmId),
+                    'state' => $this->powerState($domain['uuid']),
                     'node_ip_address' => $this->ip_address,
-                    'whmcs_service_id' => Whmcs::getServiceIdBasedOnCustomFieldValue('domainid|Domain ID', $vmId),
+                    'whmcs_service_id' => Whmcs::getServiceIdBasedOnCustomFieldValue('uuid|UUID', $domain['uuid']),
                 ]
             );
         }
 
-        return count($vmList);
+        return count($domainsList2);
     }
 
     /**

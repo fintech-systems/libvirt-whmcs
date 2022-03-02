@@ -27,6 +27,11 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 - Easy update script
 - Hyperlink to Google's Chrome SSH clients
 
+### Associating existing domains
+
+- Please see screenshot. When creating a new product definition, add a custom field `uuid|UUID`
+- Then on the service instance add the UUID. UUIDs can be seen by going into the Add-on
+
 ## Installation
 
 * We highly recommend using a VPN to connect to Libvirt nodes so that they are not publically accessible
@@ -39,6 +44,10 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 
 ## Screenshots
 
+### Setting up the Custom Field
+
+![Libvirt Setting up the Custom Field](./addons/libvirt/lib/Screenshots/product_custom_field_definition.png)
+
 ### Client Area - Reboot Server Confirmation
 
 ![Libvirt Server Module Client Area Reboot Server](./servers/libvirt/lib/Screenshots/client_area_reboot_server.png)
@@ -46,6 +55,10 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 ### Add on Module
 
 ![Libvirt Add On Module Landing Page](./addons/libvirt/lib/Screenshots/addon_module_landing_page.png)
+
+### Associating an existing domain
+
+![Libvirt Associate Existing Domain](./addons/libvirt/lib/Screenshots/associate_existing_service.png)
 
 ## Credits
 

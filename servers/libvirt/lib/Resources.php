@@ -13,7 +13,7 @@ class Resources
                 'mod_libvirt_domains.name',
                 'node_ip_address',                                
                 'tblservers.username',
-                'power_state',
+                'state',
                 'ram',                
                 'vcpus',                
             )

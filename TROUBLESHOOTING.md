@@ -1,5 +1,11 @@
 ## VM Guest Notes
 
+### Commands
+
+##### States
+
+https://www.cyberciti.biz/faq/linux-list-a-kvm-vm-guest-using-virsh-command/
+
 ### Debian/Ubuntu
 
 In order for the module to read the QEMU guest agent status, the following software must be installed on the guest:

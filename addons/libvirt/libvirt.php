@@ -71,57 +71,6 @@ function libvirt_config()
         // Version number
         'version' => '0.0.1',
         'fields' => [
-            // a text field type allows for single line text input
-            'Text Field Name' => [
-                'FriendlyName' => 'Text Field Name',
-                'Type' => 'text',
-                'Size' => '25',
-                'Default' => 'Default value',
-                'Description' => 'Description goes here',
-            ],
-            // a password field type allows for masked text input
-            'Password Field Name' => [
-                'FriendlyName' => 'Password Field Name',
-                'Type' => 'password',
-                'Size' => '25',
-                'Default' => '',
-                'Description' => 'Enter secret value here',
-            ],
-            // the yesno field type displays a single checkbox option
-            'Checkbox Field Name' => [
-                'FriendlyName' => 'Checkbox Field Name',
-                'Type' => 'yesno',
-                'Description' => 'Tick to enable',
-            ],
-            // the dropdown field type renders a select menu of options
-            'Dropdown Field Name' => [
-                'FriendlyName' => 'Dropdown Field Name',
-                'Type' => 'dropdown',
-                'Options' => [
-                    'option1' => 'Display Value 1',
-                    'option2' => 'Second Option',
-                    'option3' => 'Another Option',
-                ],
-                'Default' => 'option2',
-                'Description' => 'Choose one',
-            ],
-            // the radio field type displays a series of radio button options
-            'Radio Field Name' => [
-                'FriendlyName' => 'Radio Field Name',
-                'Type' => 'radio',
-                'Options' => 'First Option,Second Option,Third Option',
-                'Default' => 'Third Option',
-                'Description' => 'Choose your option!',
-            ],
-            // the textarea field type allows for multi-line text input
-            'Textarea Field Name' => [
-                'FriendlyName' => 'Textarea Field Name',
-                'Type' => 'textarea',
-                'Rows' => '3',
-                'Cols' => '60',
-                'Default' => 'A default value goes here...',
-                'Description' => 'Freeform multi-line text input field',
-            ],
         ]
     ];
 }
@@ -144,35 +93,38 @@ function libvirt_activate()
     // Create custom tables and schema required by your module
     try {
         Capsule::schema()
+        ->create(
+            'mod_libvirt_nodes',
+            function ($table) {
+                /** @var \Illuminate\Database\Schema\Blueprint $table */
+                $table->increments('id');
+                $table->integer('serverid');
+                $table->string('ip_address');                    
+                $table->string('cpu_total')->nullable();
+                $table->integer('ram_total')->nullable();
+                $table->integer('disk_total')->nullable();
+                $table->integer('vcpus_in_use')->nullable();                
+                $table->string('ram_in_use')->nullable();
+                $table->string('disk_in_use')->nullable();
+            }
+        );
+
+        Capsule::schema()
             ->create(
                 'mod_libvirt_domains',
                 function ($table) {
                     /** @var \Illuminate\Database\Schema\Blueprint $table */
                     $table->increments('id');
-                    $table->integer('domain_id');
+                    $table->string('uuid')->nullable();
+                    $table->integer('domain_id')->nullable();                    
                     $table->string('name');
                     $table->integer('vcpus');
                     $table->integer('ram');
-                    $table->string('power_state');
+                    $table->string('state');
                     $table->string('node_ip_address');
                     $table->integer('whmcs_service_id')->nullable();
                 }
-            );
-
-        Capsule::schema()
-            ->create(
-                'mod_libvirt_nodes',
-                function ($table) {
-                    /** @var \Illuminate\Database\Schema\Blueprint $table */
-                    $table->increments('id');
-                    $table->integer('serverid');
-                    $table->string('ip_address');                    
-                    $table->string('vcpus_total')->nullable();
-                    $table->integer('vcpus_in_use')->nullable();
-                    $table->integer('ram_total')->nullable();
-                    $table->string('ram_in_use')->nullable();
-                }
-            );
+            );       
 
         return [
             // Supported values here include: success, error or info

@@ -37,16 +37,30 @@ class Controller
         // Get a list of libvirt servers
         $nodes = Server::whereType('libvirt')
             ->join('mod_libvirt_nodes', 'tblservers.ipaddress', '=', 'mod_libvirt_nodes.ip_address')
-            ->select('name', 'ipaddress', 'username', 'disabled', 'vcpus_in_use', 'ram_in_use')
+            ->select(
+                    'name',
+                    'ipaddress',
+                    'username',
+                    'disabled',
+                    'cpu_total',
+                    'ram_total',
+                    'disk_total',
+                    'vcpus_in_use',                    
+                    'ram_in_use',
+                    'disk_in_use',
+            )
             ->get();
 
         $nodesTableBody = "";
 
+        // Construct the body for the list of Nodes (Servers)
         foreach ($nodes as $node) {
             $nodesTableBody .= "<tr><td>"
                 . $node->name . "</td><td>"
                 . $node->ipaddress . "</td><td>"
+                . $node->total_cpus . "</td><td>"
                 . $node->vcpus_in_use . "</td><td>"
+                . $node->total_ram . "</td><td>"
                 . $node->ram_in_use . "</td><td>"
                 . $node->disabled . "</td>"
                 . "</tr>";
@@ -54,6 +68,9 @@ class Controller
 
         $domainsTableBody = "";
 
+        // Construct the body for the list of Domains (VMs)
+        // These  are reloaded with the Refresh Nodes and Domains command
+        // See 
         foreach (Capsule::table('mod_libvirt_domains')
                 ->orderBy('node_ip_address')
                 ->get() as $domain) {
@@ -61,6 +78,7 @@ class Controller
             $service = Service::find($domain->whmcs_service_id);
 
             $domainsTableBody .= "<tr><td>"
+                . $domain->uuid . "</td><td>"
                 . $domain->domain_id . "</td><td>"
                 . $domain->name . "</td><td>"
                 . "<a href='clientsservices.php?userid=$service->userid&productselect=$domain->whmcs_service_id'>"
@@ -69,7 +87,7 @@ class Controller
                 . $domain->ram . "</td><td>"
                 . $service->amount . "</a></td><td>"
                 . $domain->node_ip_address . "</td><td>"
-                . ucfirst($domain->power_state) . "</td>"                                
+                . ucfirst($domain->state) . "</td>"                                
                 . "</tr>";
         }        
 
@@ -80,9 +98,11 @@ class Controller
         <div class="tablebg">
         <table id="sortabletbl1" class="datatable" width="100%" border="0" cellspacing="1" cellpadding="3">
         <tr>
-            <th>Node</th>
-            <th>IP Address</th>            
+            <th>Name</th>
+            <th>IP Address</th>
+            <th>Total CPUs</th>
             <th>vCPUs in Use</th>
+            <th>Total RAM</th>
             <th>RAM in Use</th>
             <th>Disabled</th>
         </tr>        
@@ -95,8 +115,9 @@ class Controller
         <div class="tablebg">
         <table id="sortabletbl1" class="datatable" width="100%" border="0" cellspacing="1" cellpadding="3">
         <tr>
+            <th>UUID</th>    
             <th>ID</th>
-            <th>Domain</th>            
+            <th>Name</th>            
             <th>WHMCS Service</th>            
             <th>vCPUs</th>
             <th>RAM</th>            
@@ -112,7 +133,7 @@ class Controller
 <p>
     <a href="{$modulelink}&action=refreshDomains" class="btn btn-success">
         <i class="fa fa-check" aria-hidden="true"></i>
-        Refresh Domains
+        Refresh Nodes & Domains
     </a>    
 </p>
 
