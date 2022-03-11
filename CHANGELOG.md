@@ -2,6 +2,10 @@
 
 All notable changes to `whmcs-libvirt` will be documented in this file.
 
+## 0.2.2 - 2022-03-11
+
+- Fixed bug where version update wanted to migrate the default demo database
+
 ## 0.2.1 - 2022-03-02
 
 - Fixed CPUs in use by not counting non running CPUs
