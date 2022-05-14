@@ -129,8 +129,31 @@ function libvirt_CreateAccount(array $params)
 function libvirt_SuspendAccount(array $params)
 {
     try {
+        $input = [
+            'Service ID' => $params['accountid'],
+            'Domain' => $params['domain'],
+            'Suspend Reason' => $params['suspendreason'],
+        ];
+
+        // module, action, input, response, result, replace        
+        logModuleCall("libvirt", "suspend_account_start", $input, '', '', '');
         // Call the service's suspend function, using the values provided by
         // WHMCS in `$params`.
+        $resources = new Resources($params['serviceid']);
+
+        $libvirt = new Libvirt($resources->nodeUsername(), $resources->nodeIpAddress());
+        
+        $result = $libvirt->suspend($resources->name());
+
+        $input = $result["command"];
+
+        if ($result["success"] == true) {
+            $result = "success";
+        } else {
+            $result = $result['output'];
+        }
+
+        logModuleCall("libvirt", "suspend_account_end", $input, '', $result, '');
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -163,8 +186,11 @@ function libvirt_SuspendAccount(array $params)
 function libvirt_UnsuspendAccount(array $params)
 {
     try {
-        // Call the service's unsuspend function, using the values provided by
-        // WHMCS in `$params`.
+        $resources = new Resources($params['serviceid']);
+
+        $libvirt = new Libvirt($resources->nodeUsername(), $resources->nodeIpAddress());
+        
+        $libvirt->resume($resources->name());
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(

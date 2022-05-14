@@ -23,24 +23,30 @@ use WHMCS\Database\Capsule;
  */
 class Libvirt
 {
-    private $ip_address;
+    private $ipAddress;
 
     private $login;
 
-    private $ssh = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'";
-    // ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'
-    // ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'
-    // ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'
-    // ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'";
+    private $ssh = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'";    
 
-    public function __construct($username, $ipaddress)
+    public function __construct($username, $ipAddress)
     {
-        $this->ip_address = $ipaddress;
+        $this->ipAddress = $ipAddress;
 
-        $this->login = $username . '@' . $ipaddress;
+        if (!$username) {
+            throw new Exception("Constructing libvirt, username is empty");
+        }
+
+        if (!$ipAddress) {
+            throw new Exception("Constructing libvirt, ipAddress is empty");
+        }
+
+        $this->login = $username . '@' . $ipAddress;
     }
-
+    
     /**
+     * Reboot a Domain
+     * 
      * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-starting_suspending_resuming_saving_and_restoring_a_guest_virtual_machine-starting_a_defined_domain#sect-Shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine-Rebooting_a_guest_virtual_machine     
      */
     public function reboot($name, $mode = 'initctl') {
@@ -56,6 +62,8 @@ class Libvirt
     }
 
     /**
+     * Reset a Domain
+     * 
      * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine
      */
     public function reset($name) {
@@ -69,6 +77,23 @@ class Libvirt
 
         return false;
     }
+
+    /**
+     * Resume a Domain
+     *      
+     */
+    public function resume($name) {
+        $command = "$this->ssh $this->login 'virsh resume $name'";
+            
+        exec ($command, $out, $ret);
+
+        if ($ret != 255) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-starting_suspending_resuming_saving_and_restoring_a_guest_virtual_machine-starting_a_defined_domain#sect-start-vm
@@ -99,6 +124,28 @@ class Libvirt
 
         return false;
     }
+
+    /**
+     * Suspend a Domain
+     *
+     */
+    public function suspend($name) {
+        $command = "$this->ssh $this->login 'virsh suspend $name'";
+            
+        exec ($command, $out, $ret);
+
+        if ($ret != 255) {
+            return 
+                ["success" => true];
+        }
+
+        return 
+            ["success" => false,
+            "command" => $command,
+            "output" => $out];
+                    
+    }
+
 
     /**
      * Test basic connectivity using SSH
@@ -235,6 +282,7 @@ class Libvirt
             }
 
             // See https://developers.whmcs.com/provisioning-modules/module-logging/
+            // module, action, input, response, result, replace
             logModuleCall("libvirt", "fetchAndStoreDomains", $domain['uuid'], $domain['id'], $xml, "");
 
             Capsule::table('mod_libvirt_domains')->updateOrInsert(
@@ -247,7 +295,7 @@ class Libvirt
                     'vcpus' => $vmwVmCpus,
                     'ram' => ConvertToMib($xml->memory),
                     'state' => $this->powerState($domain['uuid']),
-                    'node_ip_address' => $this->ip_address,
+                    'node_ip_address' => $this->ipAddress,
                     'whmcs_service_id' => Whmcs::getServiceIdBasedOnCustomFieldValue('uuid|UUID', $domain['uuid']),
                 ]
             );

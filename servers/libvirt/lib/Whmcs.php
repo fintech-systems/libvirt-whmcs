@@ -21,11 +21,11 @@ class Whmcs
                 'type',
                 'fieldname',
                 'value',
-                'tblcustomfieldsvalues.relid as service_id'                
+                'tblcustomfieldsvalues.relid as service_id'
             )
             ->join('tblcustomfieldsvalues', 'tblcustomfields.id', '=', 'tblcustomfieldsvalues.fieldid')
             ->whereType('product')
-            ->whereFieldname($fieldName) // E.g. 'domainid|Domain ID'            
+            ->whereFieldname($fieldName) // E.g. 'uuid|UUID'
             ->whereValue($value)
             ->get();
         

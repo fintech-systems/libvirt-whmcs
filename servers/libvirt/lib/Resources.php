@@ -2,6 +2,11 @@
 
 use WHMCS\Database\Capsule;
 
+/**
+ * Libvirt resource class
+ * 
+ * Provides ability to get domain information such as name, vCPUs, UUID, etc.
+ */
 class Resources
 {    
     private $resource;
@@ -15,7 +20,8 @@ class Resources
                 'tblservers.username',
                 'state',
                 'ram',                
-                'vcpus',                
+                'vcpus',
+                'uuid'
             )
             ->where('whmcs_service_id', $serviceId)
             ->join('tblhosting', 'mod_libvirt_domains.whmcs_service_id', '=', 'tblhosting.id')
@@ -46,6 +52,11 @@ class Resources
 
     public function ram() {
         return $this->resource->ram;
+    }
+
+    public function uuid()
+    {        
+        return $this->resource->uuid;
     }
 
     public function vcpus()

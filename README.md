@@ -9,8 +9,8 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 
 ### WHMCS Addon Module
 
-- Display libvirt nodes and guests
-- Display number of vCPUs and RAM in use by all domains
+- Display libvirt nodes and domains
+- Display the number of vCPUs and RAM in use by a domain
 - Display the total number of vCPUs and RAM commissioned on the nodes
 - Button to fetch nodes and domains based on libvirst server defined in WHMCSnodes
 
@@ -22,6 +22,11 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 - Reboot Server
 - Reset Server
 
+### Admin Area Features
+
+- Suspend Domain
+- Unsuspend Domain
+
 ### Other Features
 
 - Easy update script
@@ -30,7 +35,10 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 ### Associating existing domains
 
 - Please see screenshot. When creating a new product definition, add a custom field `uuid|UUID`
-- Then on the service instance add the UUID. UUIDs can be seen by going into the Add-on
+- Then on the service instance add the UUID
+- UUIDs can be seen by going into the Add-on
+ 
+ NOTE: When copying / pasting, remove redundant spaces
 
 ## Installation
 
@@ -41,6 +49,16 @@ An open source module to interface with a libvirt system using the WHMCS hosting
 * Then add Libvirt servers using WHMCS Systems Settings -> Server
 * You only have have to specify the user and IP address since you've already added a key
 * Go back to the module and press the 'Refresh Domains' button
+
+## Updating
+
+The update script is a pretty trivial git clone command with two recursive addons and servers copies.
+Once the copies are done, the current module is removed.
+
+```
+cd /home/whmcs_installation/public_html/modules/servers/libvirt/lib
+sh update.sh
+```
 
 ## Screenshots
 

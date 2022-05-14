@@ -1,3 +1,27 @@
+## WHMCS Notes
+
+### Freshing Nodes & Domains - WHMCS Service Linking Troubleshooting
+
+This happens in this function:
+    getServiceIdBasedOnCustomFieldValue
+
+Be careful because if UUIDs have spacing, the MySQL query will fail.
+
+### Language file troubleshooting
+
+Libvirt uses the standard WHMCS language file to display the word "SSD" on the client front-end.
+This file is servers/libvirt/templates/overview and uses this language tag:
+{$LANG.libvirtSsh}
+If that doesn't exist in your WHMCS installation, the front-end won't show the word "SSH"
+Sample override:
+
+```
+<?php
+$_LANG['libvirtDomain'] = "VM Information";
+$_LANG['libvirtPackageDomain'] = "Package/Host";
+$_LANG['libvirtSsh'] = "SSH";
+```
+
 ## VM Guest Notes
 
 ### Commands

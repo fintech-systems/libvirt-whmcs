@@ -2,6 +2,17 @@
 
 All notable changes to `whmcs-libvirt` will be documented in this file.
 
+## 0.2.3 - 2022-05-14
+
+Added
+
+- Ability to suspend and unsuspend domains from WHMCS
+- Added to troubleshooting guide how to do generic language file and how to find front-end asset that uses this language file
+- Added more information to troubleshooting guide for when WHMCS linking doesn't work
+- Updated the README with information on updating the modules
+- Added module logging for suspensions
+- The Libvirt resource constructor will now throw an exception is no username or IP address was specified
+
 ## 0.2.2 - 2022-03-11
 
 - Fixed bug where version update wanted to migrate the default demo database
