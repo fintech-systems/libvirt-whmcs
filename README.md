@@ -1,9 +1,6 @@
 # Libvirt module for WHMCS
 
-An open source module to interface with a libvirt system using the WHMCS hosting billing solution
-
-* https://developer.ibm.com/tutorials/l-libvirt/
-* https://www.whmcs.com/
+An open source module to interface with a [libvirt](https://libvirt.org/) system using the WHMCS hosting billing system
 
 ## Features
 

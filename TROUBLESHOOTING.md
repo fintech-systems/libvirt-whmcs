@@ -115,12 +115,32 @@ virsh -r dumpxml 35
 
 x = hv4-41 = 172.168.1.41
 
-
-
-
 ## References Section
 
-We keep them here because we don't want to clutter the readme
+### Virsh
 
-Virsh
-See: https://help.ubuntu.com/community/KVM/Virsh
+* Reboot a domain
+  https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-starting_suspending_resuming_saving_and_restoring_a_guest_virtual_machine-starting_a_defined_domain#sect-Shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine-Rebooting_a_guest_virtual_machine
+
+* Reset a domain
+  https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine
+
+* Start a domain
+  https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-starting_suspending_resuming_saving_and_restoring_a_guest_virtual_machine-starting_a_defined_domain#sect-start-vm
+  
+* Shutdown a domain
+* https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine
+
+### IBM Documentation
+
+* https://developer.ibm.com/tutorials/l-libvirt/
+
+### WHMCS Documentation
+
+* Main website:                 https://www.whmcs.com/
+* Service model:                https://classdocs.whmcs.com/7.0/WHMCS/Service/Service.html
+* Server (search for Server):   https://classdocs.whmcs.com/8.4/WHMCS/Service/Service.html
+
+### Ubuntu Virsh help
+
+https://help.ubuntu.com/community/KVM/Virsh

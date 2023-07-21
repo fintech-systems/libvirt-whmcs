@@ -40,4 +40,20 @@ class Whmcs
         return null;
     }
 
+    /**
+     * Returns a setting by $name
+     */
+    public static function setting($name) {
+        $result = Capsule::table('mod_libvirt_settings')
+            ->select('value')                        
+            ->whereSetting($name)            
+            ->get();
+
+        if (count($result) == 1) {
+            return $result[0]->value;
+        }
+
+        return null;
+    }
+
 }

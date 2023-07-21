@@ -69,9 +69,8 @@ function libvirt_config()
         // Default language
         'language' => 'english',
         // Version number
-        'version' => '0.2.0',
-        'fields' => [
-        ]
+        'version' => '0.3',
+        'fields' => []
     ];
 }
 
@@ -93,21 +92,21 @@ function libvirt_activate()
     // Create custom tables and schema required by your module
     try {
         Capsule::schema()
-        ->create(
-            'mod_libvirt_nodes',
-            function ($table) {
-                /** @var \Illuminate\Database\Schema\Blueprint $table */
-                $table->increments('id');
-                $table->integer('serverid');
-                $table->string('ip_address');                    
-                $table->string('cpu_total')->nullable();
-                $table->integer('ram_total')->nullable();
-                $table->integer('disk_total')->nullable();
-                $table->integer('vcpus_in_use')->nullable();                
-                $table->string('ram_in_use')->nullable();
-                $table->string('disk_in_use')->nullable();
-            }
-        );
+            ->create(
+                'mod_libvirt_nodes',
+                function ($table) {
+                    /** @var \Illuminate\Database\Schema\Blueprint $table */
+                    $table->increments('id');
+                    $table->integer('serverid');
+                    $table->string('ip_address');
+                    $table->string('cpu_total')->nullable();
+                    $table->integer('ram_total')->nullable();
+                    $table->integer('disk_total')->nullable();
+                    $table->integer('vcpus_in_use')->nullable();
+                    $table->string('ram_in_use')->nullable();
+                    $table->string('disk_in_use')->nullable();
+                }
+            );
 
         Capsule::schema()
             ->create(
@@ -116,7 +115,7 @@ function libvirt_activate()
                     /** @var \Illuminate\Database\Schema\Blueprint $table */
                     $table->increments('id');
                     $table->string('uuid')->nullable();
-                    $table->integer('domain_id')->nullable();                    
+                    $table->integer('domain_id')->nullable();
                     $table->string('name');
                     $table->integer('vcpus');
                     $table->integer('ram');
@@ -124,7 +123,19 @@ function libvirt_activate()
                     $table->string('node_ip_address');
                     $table->integer('whmcs_service_id')->nullable();
                 }
-            );       
+            );
+
+        Capsule::schema()
+            ->create(
+                'mod_libvirt_settings',
+                function ($table) {
+                    /** @var \Illuminate\Database\Schema\Blueprint $table */
+                    $table->increments('id');                    
+                    $table->string('setting');
+                    $table->text('value')->nullable();
+                    $table->timestamps();
+                }
+            );
 
         return [
             // Supported values here include: success, error or info
@@ -163,6 +174,9 @@ function libvirt_deactivate()
         Capsule::schema()
             ->dropIfExists('mod_libvirt_nodes');
 
+        Capsule::schema()
+            ->dropIfExists('mod_libvirt_settings');
+
         return [
             // Supported values here include: success, error or info
             'status' => 'success',
@@ -193,23 +207,55 @@ function libvirt_upgrade($vars)
 {
     $currentlyInstalledVersion = $vars['version'];
 
-    /// Perform SQL schema changes required by the upgrade to version 1.1 of your module
-    // if ($currentlyInstalledVersion < 1.1) {
-    //     $schema = Capsule::schema();
-    //     // Alter the table and add a new text column called "demo2"
-    //     $schema->table('mod_addonexample', function ($table) {
-    //         $table->text('demo2');
-    //     });
-    // }
+    // Perform SQL schema changes required by the upgrade to version 1.1 of your module
+    if ($currentlyInstalledVersion < 0.1) {
+        $schema = Capsule::schema();
+        // Alter the table and add a new text column called "demo2"
+        $schema->table('mod_addonexample', function ($table) {
+            $table->text('demo2');
+        });
+    }
 
-    /// Perform SQL schema changes required by the upgrade to version 1.2 of your module
-    // if ($currentlyInstalledVersion < 1.2) {
-    //     $schema = Capsule::schema();
-    //     // Alter the table and add a new text column called "demo3"
-    //     $schema->table('mod_addonexample', function ($table) {
-    //         $table->text('demo3');
-    //     });
-    // }
+    // Perform SQL schema changes required by the upgrade to version 1.2 of your module
+    if ($currentlyInstalledVersion < 0.2) {
+        $schema = Capsule::schema();
+        // Alter the table and add a new text column called "demo3"
+        $schema->table('mod_addonexample', function ($table) {
+            $table->text('demo3');
+        });
+    }
+
+    // Perform SQL schema changes required by the upgrade to version 0.3 of this module
+    if ($currentlyInstalledVersion < 0.3) {
+        $schema = Capsule::schema();
+        // Create a new table for settings
+        // Create custom tables and schema required by your module
+        try {            
+            Capsule::schema()
+                ->create(
+                    'mod_libvirt_settings',
+                    function ($table) {
+                        /** @var \Illuminate\Database\Schema\Blueprint $table */
+                        $table->increments('id');
+                        $table->string('setting');
+                        $table->text('value')->nullable();
+                        $table->timestamps();
+                    }
+                );
+
+            return [
+                // Supported values here include: success, error or info
+                'status' => 'success',
+                'description' => 'Libvirt module upgrade worked, settings table added.',
+            ];
+        } catch (\Exception $e) {
+            return [
+                // Supported values here include: success, error or info
+                'status' => "error",
+                'description' => 'Unable to upgrade mod_libvirt: ' . $e->getMessage(),
+            ];
+        }
+    }
 }
 
 /**

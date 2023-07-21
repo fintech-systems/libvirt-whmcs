@@ -13,10 +13,10 @@ use WHMCS\Database\Capsule;
 
 /**
  * Libvirt
- * 
+ *
  * Inspired by:
  * https://github.com/librenms/librenms/blob/master/includes/discovery/libvirt-vminfo.inc.php
- * 
+ *
  * virsh list --all
  * virsh -rc qemu://root@a.b.c.d list
  * virsh -r dumpxml 35
@@ -27,7 +27,7 @@ class Libvirt
 
     private $login;
 
-    private $ssh = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'";    
+    private $ssh = "ssh -o 'StrictHostKeyChecking no' -o 'PreferredAuthentications publickey' -o 'IdentitiesOnly yes'";
 
     public function __construct($username, $ipAddress)
     {
@@ -43,113 +43,71 @@ class Libvirt
 
         $this->login = $username . '@' . $ipAddress;
     }
-    
+
     /**
-     * Reboot a Domain
-     * 
-     * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-starting_suspending_resuming_saving_and_restoring_a_guest_virtual_machine-starting_a_defined_domain#sect-Shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine-Rebooting_a_guest_virtual_machine     
+     * Gracefully reboot a domain
      */
-    public function reboot($name, $mode = 'initctl') {
-        $command = "$this->ssh $this->login 'virsh reboot $name --mode $mode'";
-        
-        exec ($command, $out, $ret);
-
-        if ($ret != 255) {
-            return true;
-        }
-
-        return false;
+    public function reboot($name, $mode = 'initctl'): array
+    {
+        return $this->connect(
+            "virsh reboot $name --mode $mode"
+        );
     }
 
     /**
-     * Reset a Domain
-     * 
-     * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine
+     * Force reset a domain
      */
-    public function reset($name) {
-        $command = "$this->ssh $this->login 'virsh reset $name'";
-            
-        exec ($command, $out, $ret);
-
-        if ($ret != 255) {
-            return true;
-        }
-
-        return false;
+    public function reset($name): array
+    {
+        return $this->connect(
+            "virsh reset $name"
+        );
     }
 
     /**
-     * Resume a Domain
-     *      
+     * Resume a domain. This typically happens after suspending a domain.
      */
-    public function resume($name) {
-        $command = "$this->ssh $this->login 'virsh resume $name'";
-            
-        exec ($command, $out, $ret);
-
-        if ($ret != 255) {
-            return true;
-        }
-
-        return false;
-    }
-
-
-    /**
-     * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-starting_suspending_resuming_saving_and_restoring_a_guest_virtual_machine-starting_a_defined_domain#sect-start-vm
-     */
-    public function start($name) {
-        $command = "$this->ssh $this->login 'virsh start $name'";
-        
-        exec ($command, $out, $ret);
-
-        if ($ret != 255) {
-            return true;
-        }
-
-        return false;
+    public function resume($name): array
+    {
+        return $this->connect(
+            "virsh resume $name"
+        );
     }
 
     /**
-     * https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-shutting_down_rebooting_and_force_shutdown_of_a_guest_virtual_machine
+     * Start a domain
      */
-    public function shutdown($name, $mode = 'acpi') {
-        $command = "$this->ssh $this->login 'virsh shutdown $name --mode $mode'";
-        
-        exec ($command, $out, $ret);
-
-        if ($ret != 255) {
-            return true;
-        }
-
-        return false;
+    public function start($name): array
+    {
+        return $this->connect(
+            "virsh start $name"
+        );
     }
 
     /**
-     * Suspend a Domain
-     *
+     * Graceful shutdown a domain
      */
-    public function suspend($name) {
-        $command = "$this->ssh $this->login 'virsh suspend $name'";
-            
-        exec ($command, $out, $ret);
+    public function shutdown($name, $mode = 'acpi'): array
+    {
+        return $this->connect(
+            "virsh shutdown $name --mode $mode"
+        );
+    }
 
-        if ($ret != 255) {
-            return 
-                ["success" => true];
-        }
-
-        return 
-            ["success" => false,
-            "command" => $command,
-            "output" => $out];
-                    
+    /**
+     * Suspend a domain. Used in conjunction with resume a domain.
+     */
+    public function suspend($name): array
+    {
+        return $this->connect(
+            "virsh suspend $name"
+        );
     }
 
 
     /**
      * Test basic connectivity using SSH
-     * 
+     *
      * This will work if the key has been added
      */
     public function testConnection()
@@ -165,64 +123,66 @@ class Libvirt
 
     /**
      * This outputs table format IDs, names, and states and returns array with names/state/id
-     * 
+     *
      * IDs might be empty in lieu of --all
-     * 
+     *
      * This command should precede virsh list --all --name --uuid which then merges
      * the information with UUIDs
      */
-    function virshListIdNameState() {
+    function virshListIdNameState(): array
+    {
         $command = "$this->ssh $this->login 'virsh list --all'";
 
         exec($command, $output);
-        
+
         $numberOfDomains = count($output) - 1;
-        
+
         // Start at index item 2 to skip column header and dashed break line
-        for ($i = 2; $i < $numberOfDomains; $i++) { 
+        for ($i = 2; $i < $numberOfDomains; $i++) {
             $result = preg_split('/ +/', $output[$i]);
-                        
+
             $domains[$result[2]]['state'] = trim($result[3] . ' ' . $result[4]);
 
             $domains[$result[2]]['id'] = $result[1];
         }
-        
+
         return $domains;
     }
 
-    function virshListUuidName($domainsList) {
+    function virshListUuidName($domainsList): array
+    {
         $command = "$this->ssh $this->login 'virsh list --all --uuid --name'";
 
         exec($command, $output);
-                                        
-        foreach ($output as $domain) {             
+
+        foreach ($output as $domain) {
 
             [$uuid, $name] = explode(' ', $domain);
-                                    
+
             // The last line is empty so avoid capturing it
             if ($domain) {
                 $domainsList[$name]['uuid'] = trim(preg_replace('/\t+/', '', $uuid)); // Trim tab
                 $domainsList[$name]['name'] = $name;
             }
-            
+
         }
-        
+
         return $domainsList;
     }
-    
+
     /**
-     * Get the power on state of each VM
+     * Get the power state of each VM
      */
     public function powerState($vmId)
     {
         $vm_state = $this->virshDomstate($vmId);
 
-        return $vm_state[0];        
+        return $vm_state[0];
     }
 
     /**
      * Get extended information for a VM then flatten it to an XML string
-     * 
+     *
      * $id can be UUID or vmID or name
      */
     public function virshDumpxml($id)
@@ -242,7 +202,7 @@ class Libvirt
 
     /**
      * Used by the powerState to see to each VMs `domstate`
-     * 
+     *
      * See https://libvirt.org/manpages/virsh.html#domstate
      */
     private function virshDomstate($id)
@@ -256,21 +216,21 @@ class Libvirt
 
     /**
      * Fetch all VMs and store in mod_libvirt_domains
-     * 
+     *
      * This is a multi-step process:
-     * 
+     *
      *  1. Fetch id, name and state
      *  2. Fetch UUID and combine with name
      *  3. Store in database based on UUID
-     * 
-     *  Return the number of domain updated for totals storage
+     *
+     *  Return the number of domains updated for totals storage
      */
     public function fetchAndStoreDomains()
     {
         $domainsList1 = $this->virshListIdNameState();
 
         $domainsList2 = $this->virshListUuidName($domainsList1);
-                
+
         foreach ($domainsList2 as $domain) {
             // die(print_r($domain,1));
 
@@ -290,12 +250,12 @@ class Libvirt
                     'uuid' => $domain['uuid'],
                 ],
                 [
-                    'domain_id' => $domain['id'],
-                    'name' => $xml->name,
-                    'vcpus' => $vmwVmCpus,
-                    'ram' => ConvertToMib($xml->memory),
-                    'state' => $this->powerState($domain['uuid']),
-                    'node_ip_address' => $this->ipAddress,
+                    'domain_id'        => $domain['id'],
+                    'name'             => $xml->name,
+                    'vcpus'            => $vmwVmCpus,
+                    'ram'              => ConvertToMib($xml->memory),
+                    'state'            => $this->powerState($domain['uuid']),
+                    'node_ip_address'  => $this->ipAddress,
                     'whmcs_service_id' => Whmcs::getServiceIdBasedOnCustomFieldValue('uuid|UUID', $domain['uuid']),
                 ]
             );
@@ -314,7 +274,7 @@ class Libvirt
             ->where('state', 'running')
             ->groupBy('node_ip_address')
             ->sum('vcpus');
-            
+
         $ramInUse = Capsule::table('mod_libvirt_domains')
             ->where('node_ip_address', $node->ipaddress)
             ->groupBy('node_ip_address')
@@ -326,9 +286,32 @@ class Libvirt
             ],
             [
                 'vcpus_in_use' => $cpusInUse,
-                'ram_in_use' => $ramInUse,
+                'ram_in_use'   => $ramInUse,
             ]
         );
     }
-}
 
+    /**
+     * SSH to a server and execute a command
+     *
+     * @param string $script
+     * @return string[]
+     */
+    protected function connect(string $script): array
+    {
+        $command = "$this->ssh $this->login '$script'";
+
+        exec($command, $out, $ret);
+
+        if ($ret != 255) {
+            return
+                ["result" => "success"];
+        }
+
+        return
+            ["result"  => "failed",
+             "command" => $command,
+             "output"  => $out];
+
+    }
+}

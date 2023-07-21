@@ -2,6 +2,10 @@
 
 All notable changes to `whmcs-libvirt` will be documented in this file.
 
+## 0.3
+
+- Settings section and refactoring
+
 ## 0.2.3 - 2022-05-14
 
 Added
