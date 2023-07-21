@@ -146,7 +146,7 @@ $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reset_Server').
 {/foreach}
 
 {if $systemStatus == 'Active'}
-    {if count($wpInstances) || $allowWpClientInstall}
+    {* {if count($wpInstances) || $allowWpClientInstall}
         <div class="panel card panel-default mb-3" id="cPanelWordPress" data-service-id="{$serviceId}"
             data-wp-domain="{$wpDomain}">
             <div class="panel-heading card-header">
@@ -208,7 +208,7 @@ $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reset_Server').
                 </div>
             </div>
         </div>
-    {/if}
+    {/if} *}
 
 {else}
 
