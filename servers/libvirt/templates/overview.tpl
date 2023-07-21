@@ -30,7 +30,7 @@ $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reset_Server').
                 </div>
 
                 <p>
-                    <a href="chrome-extension://iodihamcpbpeioajjeobimgagajmlibd/html/nassh.html#{$username}@{$domain}:22" class="btn btn-default btn-sm" target="_blank">{$LANG.libvirtSsh}</a><a title="SSH works using Google's Chrome SSH client" href='https://chrome.google.com/webstore/detail/secure-shell/iodihamcpbpeioajjeobimgagajmlibd'>*</a>
+                    <a href="chrome-extension://iodihamcpbpeioajjeobimgagajmlibd/html/nassh.html#{$username}@{$domain}:22" class="btn btn-default btn-sm" target="_blank">{$LANG.libvirtSsh}</a><a title="SSH works using Google's Chrome SSH client" href='https://chrome.google.com/webstore/detail/secure-shell/iodihamcpbpeioajjeobimgagajmlibd'>SSH to Server*</a>
                     {if $domainId}
                         <a href="clientarea.php?action=domaindetails&id={$domainId}" class="btn btn-success btn-sm"
                             target="_blank">{$LANG.managedomain}</a>
